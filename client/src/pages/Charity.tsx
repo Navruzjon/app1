@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { charityCauses } from "@/lib/mockData";
-import { Heart, TrendingUp, Users, ShieldCheck, CreditCard } from "lucide-react";
+import { Heart, TrendingUp, Users, ShieldCheck, CreditCard, ExternalLink, Info, FileText, AlertCircle, CheckCircle2, Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Charity() {
   return (
@@ -87,13 +93,64 @@ export default function Charity() {
                 </div>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{cause.organization}</p>
+                    <div className="flex flex-col">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        {cause.organization}
+                        {/* @ts-ignore */}
+                        {cause.verificationStatus === 'verified' && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <CheckCircle2 className="w-3 h-3 text-blue-500 fill-blue-100" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Verified 501(c)(3) Organization</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </p>
+                      {/* @ts-ignore */}
+                      <span className="text-[10px] text-muted-foreground/70 mt-0.5">Reg: {cause.registrationNumber}</span>
+                    </div>
+                    
+                    {/* Rating Badge */}
+                    {/* @ts-ignore */}
+                    {cause.rating && (
+                      <Badge variant="secondary" className={`gap-1 ${/* @ts-ignore */ cause.transparencyScore > 90 ? "bg-green-50 text-green-700 border-green-100" : "bg-amber-50 text-amber-700 border-amber-100"}`}>
+                        <Star className="w-3 h-3 fill-current" />
+                        {/* @ts-ignore */}
+                        {cause.rating}
+                      </Badge>
+                    )}
                   </div>
                   <CardTitle className="text-lg">{cause.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pb-2">
-                  <p className="text-sm text-muted-foreground mb-4">{cause.description}</p>
+                <CardContent className="flex-1 pb-2 space-y-4">
+                  <p className="text-sm text-muted-foreground">{cause.description}</p>
                   
+                  {/* Transparency & Verification Info */}
+                  <div className="bg-muted/30 p-3 rounded-lg border border-border/50 space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> Entity:
+                      </span>
+                      {/* @ts-ignore */}
+                      <span className="font-medium truncate max-w-[150px]" title={cause.entityName}>{cause.entityName}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Info className="w-3 h-3" /> Transparency:
+                      </span>
+                      {/* @ts-ignore */}
+                      <span className={`font-medium ${cause.transparencyScore >= 90 ? "text-green-600" : "text-amber-600"}`}>
+                        {/* @ts-ignore */}
+                        {cause.transparencyScore}% Score
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium text-primary">£{cause.raised.toLocaleString()} raised</span>
@@ -102,8 +159,17 @@ export default function Charity() {
                     <Progress value={(cause.raised / cause.target) * 100} className="h-2 bg-muted" />
                   </div>
                 </CardContent>
-                <CardFooter className="pt-4">
+                <CardFooter className="pt-4 gap-2 flex-col sm:flex-row">
                   <DonateModal cause={cause} />
+                  {/* @ts-ignore */}
+                  {cause.projectLink && (
+                    <Button variant="outline" className="w-full sm:w-auto" asChild>
+                      {/* @ts-ignore */}
+                      <a href={cause.projectLink} target="_blank" rel="noopener noreferrer" className="gap-2">
+                        View Project <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
