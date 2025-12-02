@@ -12,7 +12,7 @@ const MobileSheet = ({ isOpen, onClose, children }: { isOpen: boolean, onClose: 
       <TouchableOpacity style={styles.mobileSheetBackdrop} onPress={onClose} />
       <View style={styles.mobileSheetContent}>
         {children}
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#f8fafc', // bg-background
+    // @ts-ignore
     height: '100vh', // Full viewport height for web
   },
   sidebar: {

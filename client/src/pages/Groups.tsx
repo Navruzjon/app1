@@ -1,155 +1,181 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, Users, MapPin, Building2, Plus, MessageCircle, ShieldCheck, GraduationCap } from "lucide-react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native-web';
 import { groups } from "@/lib/mockData";
+import { Search, MapPin, Building2, Plus, GraduationCap, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+
+// Reusable Components
+const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.card, style]}>{children}</View>
+);
+
+const CardHeader = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardHeader, style]}>{children}</View>
+);
+
+const CardTitle = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <Text style={[styles.cardTitle, style]}>{children}</Text>
+);
+
+const CardContent = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardContent, style]}>{children}</View>
+);
+
+const CardFooter = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardFooter, style]}>{children}</View>
+);
+
+const Button = ({ children, onPress, variant = "primary", style }: { children: React.ReactNode, onPress?: () => void, variant?: "primary" | "outline" | "ghost", style?: any }) => {
+  const bg = variant === "primary" ? "#059669" : "transparent";
+  const border = variant === "outline" ? "#e2e8f0" : "transparent";
+  const textColor = variant === "primary" ? "#ffffff" : "#0f172a";
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[styles.button, { backgroundColor: bg, borderColor: border, borderWidth: variant === "outline" ? 1 : 0 }, style]}
+    >
+      <Text style={[styles.buttonText, { color: textColor }]}>{children}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const Input = ({ value, onChangeText, placeholder, style, ...props }: any) => (
+  <TextInput
+    value={value}
+    onChangeText={onChangeText}
+    placeholder={placeholder}
+    style={[styles.input, style]}
+    placeholderTextColor="#94a3b8"
+    {...props}
+  />
+);
 
 export default function Groups() {
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-heading font-bold">Community Groups</h1>
-            <p className="text-muted-foreground mt-1">Find your tribe, learn together, and grow.</p>
-          </div>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.pageTitle}>Community Groups</Text>
+            <Text style={styles.pageSubtitle}>Find your tribe, learn together, and grow.</Text>
+          </View>
           <CreateGroupDialog />
-        </div>
+        </View>
 
         {/* Search & Filter */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <View style={styles.searchContainer}>
+          <Search size={20} color="#94a3b8" style={styles.searchIcon} />
           <Input 
             placeholder="Search for groups (e.g. Quran, Charity, Sports)..." 
-            className="pl-10 py-6 rounded-xl bg-card border-none shadow-sm text-base"
+            style={styles.searchInput}
           />
-        </div>
+        </View>
 
         {/* Featured Groups */}
-        <div className="space-y-10">
+        <View style={{ gap: 40 }}>
           
           {/* Ulama / Scholar Q&A Section */}
-          <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-               <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">
-                 <GraduationCap className="w-5 h-5" />
-               </div>
-               <div>
-                 <h2 className="text-xl font-heading font-semibold text-indigo-900">Ask a Scholar (Ulama)</h2>
-                 <p className="text-sm text-indigo-700">Connect with specialized scholars for specific religious guidance.</p>
-               </div>
-            </div>
+          <View style={styles.ulamaSection}>
+            <View style={styles.sectionHeader}>
+               <View style={styles.ulamaIconBox}>
+                 <GraduationCap size={20} color="#4338ca" />
+               </View>
+               <View>
+                 <Text style={styles.ulamaTitle}>Ask a Scholar (Ulama)</Text>
+                 <Text style={styles.ulamaSubtitle}>Connect with specialized scholars for specific religious guidance.</Text>
+               </View>
+            </View>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <View style={styles.grid}>
               {groups.filter(g => g.type === 'ulama_qa').map((group) => (
-                <Card key={group.id} className="group hover:shadow-md transition-all duration-200 border-indigo-100 shadow-sm flex flex-col bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                        <group.icon className="w-6 h-6" />
-                      </div>
+                <Card key={group.id} style={styles.ulamaCard}>
+                  <CardHeader style={{ paddingBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={styles.groupIconBoxUlama}>
+                        <group.icon size={24} color="#4f46e5" />
+                      </View>
                       {/* @ts-ignore */}
                       {group.specialty && (
-                        <div className="px-2.5 py-1 rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 flex items-center gap-1">
+                        <View style={styles.specialtyBadge}>
                           {/* @ts-ignore */}
-                          {group.specialty}
-                        </div>
+                          <Text style={styles.specialtyText}>{group.specialty}</Text>
+                        </View>
                       )}
-                    </div>
-                    <CardTitle className="mt-4 text-lg text-indigo-950">{group.name}</CardTitle>
-                    <div className="flex flex-col gap-1 mt-1">
-                      <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-medium">
-                          <Building2 className="w-3 h-3" />
-                          {group.mosque}
-                      </div>
-                    </div>
+                    </View>
+                    <CardTitle style={{ marginTop: 16, color: '#1e1b4b' }}>{group.name}</CardTitle>
+                    <View style={{ marginTop: 4, flexDirection: 'row', alignItems: 'center' }}>
+                      <Building2 size={12} color="#4f46e5" style={{ marginRight: 6 }} />
+                      <Text style={{ fontSize: 12, color: '#4f46e5', fontWeight: '500' }}>{group.mosque}</Text>
+                    </View>
                   </CardHeader>
-                  <CardContent className="flex-1">
-                    <CardDescription className="line-clamp-2">{group.description}</CardDescription>
+                  <CardContent style={{ flex: 1 }}>
+                    <Text numberOfLines={2} style={{ fontSize: 14, color: '#64748b' }}>{group.description}</Text>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white transition-all">
+                    <Button style={{ flex: 1, backgroundColor: '#4f46e5' }}>
                       Ask Question
                     </Button>
                   </CardFooter>
                 </Card>
               ))}
-            </div>
-          </div>
+            </View>
+          </View>
 
           {/* General Groups */}
-          <div>
-            <h2 className="text-xl font-heading font-semibold mb-4">Community Groups</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <View>
+            <Text style={styles.sectionTitle}>Community Groups</Text>
+            <View style={styles.grid}>
               {groups.filter(g => g.type !== 'ulama_qa').map((group) => (
-                <Card key={group.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <group.icon className="w-6 h-6" />
-                      </div>
-                      <div className="px-2.5 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                        {group.members} Members
-                      </div>
-                    </div>
-                    <CardTitle className="mt-4 text-lg">{group.name}</CardTitle>
-                    <div className="flex flex-col gap-1 mt-1">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="w-3 h-3" />
-                          {group.location.town}, {group.location.city}, {group.location.country}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-                          <Building2 className="w-3 h-3" />
-                          {group.mosque}
-                      </div>
-                    </div>
+                <Card key={group.id} style={styles.groupCard}>
+                  <CardHeader style={{ paddingBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={styles.groupIconBox}>
+                        <group.icon size={24} color="#059669" />
+                      </View>
+                      <View style={styles.memberBadge}>
+                        <Text style={{ fontSize: 12, color: '#64748b', fontWeight: '500' }}>{group.members} Members</Text>
+                      </View>
+                    </View>
+                    <CardTitle style={{ marginTop: 16 }}>{group.name}</CardTitle>
+                    <View style={{ marginTop: 4, gap: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <MapPin size={12} color="#94a3b8" style={{ marginRight: 6 }} />
+                          <Text style={{ fontSize: 12, color: '#64748b' }}>{group.location.town}, {group.location.city}, {group.location.country}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Building2 size={12} color="#059669" style={{ marginRight: 6 }} />
+                          <Text style={{ fontSize: 12, color: '#059669', fontWeight: '500' }}>{group.mosque}</Text>
+                      </View>
+                    </View>
                   </CardHeader>
-                  <CardContent className="flex-1">
-                    <CardDescription className="line-clamp-2">{group.description}</CardDescription>
+                  <CardContent style={{ flex: 1 }}>
+                    <Text numberOfLines={2} style={{ fontSize: 14, color: '#64748b' }}>{group.description}</Text>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+                    <Button variant="outline" style={{ flex: 1 }}>
                       View Group
                     </Button>
                   </CardFooter>
                 </Card>
               ))}
-            </div>
-          </div>
-        </div>
+            </View>
+          </View>
+        </View>
 
         {/* Discover Categories */}
-        <div>
-          <h2 className="text-xl font-heading font-semibold mb-4">Discover by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <View style={{ marginTop: 40 }}>
+          <Text style={styles.sectionTitle}>Discover by Category</Text>
+          <View style={styles.categoryGrid}>
             {["Quran Studies", "Charity & Volunteer", "Youth & Students", "Professionals", "Reverts Support", "Sisters Only", "Sports & Fitness", "Events"].map((cat) => (
-              <div key={cat} className="p-6 rounded-xl bg-card border border-transparent hover:border-primary/20 hover:bg-accent/50 cursor-pointer transition-all text-center group">
-                <h3 className="font-medium group-hover:text-primary transition-colors">{cat}</h3>
-              </div>
+              <TouchableOpacity key={cat} style={styles.categoryCard}>
+                <Text style={styles.categoryText}>{cat}</Text>
+              </TouchableOpacity>
             ))}
-          </div>
-        </div>
-      </div>
+          </View>
+        </View>
+      </View>
     </Layout>
   );
 }
@@ -157,8 +183,7 @@ export default function Groups() {
 function CreateGroupDialog() {
   const [open, setOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     toast({
       title: "Group Created Successfully",
       description: "Your new group has been created and is pending approval.",
@@ -167,68 +192,328 @@ function CreateGroupDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg shadow-primary/20">
-          <Plus className="w-4 h-4" /> Create Group
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Create a Community Group</DialogTitle>
-          <DialogDescription>
-            Start a new group to connect with people in your area.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Button onPress={() => setOpen(true)} style={{ flexDirection: 'row', gap: 8 }}>
+        <Plus size={16} color="#ffffff" /> <Text style={{ color: '#ffffff', fontWeight: '600' }}>Create Group</Text>
+      </Button>
+      
+      <Modal
+        visible={open}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Create a Community Group</Text>
+                <Text style={styles.modalDescription}>Start a new group to connect with people in your area.</Text>
+              </View>
+              <TouchableOpacity onPress={() => setOpen(false)}>
+                <X size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
 
-        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Group Name</Label>
-            <Input id="name" placeholder="e.g. Sunrise Runners, Quran Circle" required />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" placeholder="What is this group about?" />
-          </div>
+            <View style={styles.modalBody}>
+              <View style={{ marginBottom: 16 }}>
+                <Text style={styles.label}>Group Name</Text>
+                <Input placeholder="e.g. Sunrise Runners, Quran Circle" />
+              </View>
+              
+              <View style={{ marginBottom: 16 }}>
+                <Text style={styles.label}>Description</Text>
+                <Input placeholder="What is this group about?" multiline numberOfLines={3} style={{ height: 80, textAlignVertical: 'top', paddingTop: 10 }} />
+              </View>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="country">Country</Label>
-              <Select defaultValue="uk">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="uk">United Kingdom</SelectItem>
-                  <SelectItem value="usa">USA</SelectItem>
-                  <SelectItem value="canada">Canada</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="grid gap-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="e.g. London" required />
-            </div>
-          </div>
+              <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.label}>Country</Text>
+                  <Input placeholder="Select country" />
+                </View>
+                 <View style={{ flex: 1 }}>
+                  <Text style={styles.label}>City</Text>
+                  <Input placeholder="e.g. London" />
+                </View>
+              </View>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="town">Town/Borough</Label>
-              <Input id="town" placeholder="e.g. Whitechapel" required />
-            </div>
-             <div className="grid gap-2">
-              <Label htmlFor="mosque">Affiliated Mosque (Optional)</Label>
-              <Input id="mosque" placeholder="e.g. East London Mosque" />
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">Create Group</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.label}>Town/Borough</Text>
+                  <Input placeholder="e.g. Whitechapel" />
+                </View>
+                 <View style={{ flex: 1 }}>
+                  <Text style={styles.label}>Affiliated Mosque</Text>
+                  <Input placeholder="e.g. East London Mosque" />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.modalFooter}>
+              <Button variant="ghost" onPress={() => setOpen(false)} style={{ marginRight: 8 }}>Cancel</Button>
+              <Button onPress={handleSubmit}>Create Group</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    maxWidth: 1024,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 32,
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  pageTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  pageSubtitle: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  searchContainer: {
+    position: 'relative',
+    marginBottom: 32,
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 18,
+    zIndex: 1,
+  },
+  searchInput: {
+    paddingLeft: 48,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    fontSize: 16,
+  },
+  ulamaSection: {
+    backgroundColor: '#eef2ff',
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+    borderRadius: 16,
+    padding: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  ulamaIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e0e7ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ulamaTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#312e81',
+  },
+  ulamaSubtitle: {
+    fontSize: 14,
+    color: '#4338ca',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
+  },
+  ulamaCard: {
+    flex: 1,
+    minWidth: 300,
+    borderColor: '#e0e7ff',
+    backgroundColor: '#ffffff',
+  },
+  groupCard: {
+    flex: 1,
+    minWidth: 300,
+  },
+  groupIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupIconBoxUlama: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  specialtyBadge: {
+    backgroundColor: '#e0e7ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  specialtyText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#4338ca',
+  },
+  memberBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: 16,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  categoryCard: {
+    flex: 1,
+    minWidth: 150,
+    padding: 24,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  categoryText: {
+    fontWeight: '500',
+    color: '#0f172a',
+    textAlign: 'center',
+  },
+  // Shared
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  cardHeader: {
+    padding: 16,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  cardContent: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  cardFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonText: {
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    fontSize: 14,
+  },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 600,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  modalFooter: {
+    padding: 20,
+    paddingTop: 0,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 6,
+    color: '#0f172a',
+  },
+});

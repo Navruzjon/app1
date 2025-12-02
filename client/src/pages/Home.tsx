@@ -280,6 +280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 14,
     marginBottom: 12,
+    // @ts-ignore
     outlineStyle: 'none',
   },
   composerActions: {

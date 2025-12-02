@@ -1,118 +1,153 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Switch, Modal } from 'react-native-web';
 import { prayerTimes } from "@/lib/mockData";
-import { Compass, Clock, MapPin, Moon, Bell, Mail, MessageSquare, Globe } from "lucide-react";
+import { Compass, Clock, MapPin, Moon, Bell, Mail, MessageSquare, Globe, X } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+
+// Reusable Native Components
+const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.card, style]}>{children}</View>
+);
+
+const CardHeader = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardHeader, style]}>{children}</View>
+);
+
+const CardTitle = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <Text style={[styles.cardTitle, style]}>{children}</Text>
+);
+
+const CardContent = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardContent, style]}>{children}</View>
+);
+
+const Button = ({ children, onPress, variant = "primary", style, className }: { children: React.ReactNode, onPress?: () => void, variant?: "primary" | "outline" | "ghost", style?: any, className?: string }) => {
+  const bg = variant === "primary" ? "#059669" : variant === "outline" ? "transparent" : "transparent";
+  const border = variant === "outline" ? "#e2e8f0" : "transparent";
+  const textColor = variant === "primary" ? "#ffffff" : "#0f172a";
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[styles.button, { backgroundColor: bg, borderColor: border, borderWidth: variant === "outline" ? 1 : 0 }, style]}
+    >
+      <Text style={[styles.buttonText, { color: textColor }]}>{children}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const Input = ({ value, onChangeText, placeholder, style, ...props }: any) => (
+  <TextInput
+    value={value}
+    onChangeText={onChangeText}
+    placeholder={placeholder}
+    style={[styles.input, style]}
+    placeholderTextColor="#94a3b8"
+    {...props}
+  />
+);
 
 export default function Prayer() {
   const today = new Date();
   
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-heading font-bold">Prayer Times</h1>
-            <div className="flex flex-col gap-1">
-              <p className="text-muted-foreground flex items-center gap-2">
-                <MapPin className="w-4 h-4" /> London, United Kingdom
-              </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <Globe className="w-3 h-3" /> Timezone: Europe/London (GMT+0)
-              </p>
-            </div>
-            <p className="font-medium text-primary">{format(today, "EEEE, d MMMM yyyy")} • 14 Rajab 1446</p>
-          </div>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.pageTitle}>Prayer Times</Text>
+            <View style={styles.locationRow}>
+              <Text style={styles.locationText}>
+                <MapPin size={14} color="#64748b" style={{ marginRight: 4 }} /> London, United Kingdom
+              </Text>
+              <Text style={styles.timezoneText}>
+                <Globe size={12} color="#64748b" style={{ marginRight: 4 }} /> Timezone: Europe/London (GMT+0)
+              </Text>
+            </View>
+            <Text style={styles.dateText}>{format(today, "EEEE, d MMMM yyyy")} • 14 Rajab 1446</Text>
+          </View>
           
           <PrayerAlertsDialog />
-        </div>
+        </View>
 
         {/* Main Countdown Card */}
-        <Card className="bg-primary text-primary-foreground border-none shadow-xl overflow-hidden relative">
-          <div className="absolute inset-0 bg-[url('/attached_assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png')] opacity-10 bg-cover bg-center" />
-          <CardContent className="p-8 md:p-12 text-center relative z-10">
-            <p className="text-primary-foreground/80 font-medium mb-2">Next Prayer: Asr</p>
-            <div className="text-6xl md:text-8xl font-bold font-mono tracking-tight mb-4">
-              02:14:32
-            </div>
-            <p className="text-lg opacity-90">Begins at {prayerTimes.asr}</p>
+        <Card style={styles.mainCard}>
+          <View style={styles.patternOverlay} />
+          <CardContent style={styles.mainCardContent}>
+            <Text style={styles.nextPrayerLabel}>Next Prayer: Asr</Text>
+            <Text style={styles.countdownText}>02:14:32</Text>
+            <Text style={styles.beginsText}>Begins at {prayerTimes.asr}</Text>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <View style={styles.grid}>
           {/* Timetable */}
-          <Card className="border-none shadow-sm">
+          <Card style={styles.gridCard}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" /> Today's Schedule
+              <CardTitle style={styles.cardTitleWithIcon}>
+                <Clock size={20} color="#059669" style={{ marginRight: 8 }} /> Today's Schedule
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {Object.entries(prayerTimes).map(([name, time]) => (
-                  <div key={name} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-                    <span className="capitalize font-medium flex items-center gap-3">
-                      {name === 'fajr' || name === 'isha' || name === 'maghrib' ? <Moon className="w-4 h-4 text-muted-foreground" /> : <Clock className="w-4 h-4 text-muted-foreground" />}
-                      {name}
-                    </span>
-                    <span className="font-mono font-semibold bg-muted px-3 py-1 rounded-md">{time}</span>
-                  </div>
+            <CardContent style={{ padding: 0 }}>
+              <View style={styles.timetable}>
+                {Object.entries(prayerTimes).map(([name, time], index) => (
+                  <View key={name} style={[styles.timetableRow, index !== Object.keys(prayerTimes).length - 1 && styles.borderBottom]}>
+                    <View style={styles.prayerNameRow}>
+                      {name === 'fajr' || name === 'isha' || name === 'maghrib' ? 
+                        <Moon size={16} color="#64748b" style={{ marginRight: 12 }} /> : 
+                        <Clock size={16} color="#64748b" style={{ marginRight: 12 }} />
+                      }
+                      <Text style={styles.prayerName}>{name.charAt(0).toUpperCase() + name.slice(1)}</Text>
+                    </View>
+                    <View style={styles.timeBadge}>
+                      <Text style={styles.timeText}>{time}</Text>
+                    </View>
+                  </View>
                 ))}
-              </div>
+              </View>
             </CardContent>
           </Card>
 
           {/* Qibla */}
-          <Card className="border-none shadow-sm">
+          <Card style={styles.gridCard}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-primary" /> Qibla Direction
+              <CardTitle style={styles.cardTitleWithIcon}>
+                <Compass size={20} color="#059669" style={{ marginRight: 8 }} /> Qibla Direction
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center p-8">
-              <div className="w-48 h-48 rounded-full border-8 border-muted relative flex items-center justify-center shadow-inner bg-muted/20">
+            <CardContent style={styles.qiblaContent}>
+              <View style={styles.compassCircle}>
                 {/* Compass Needles */}
-                <div className="absolute inset-0 flex items-center justify-center rotate-[119deg]">
-                   <div className="w-1 h-20 bg-red-500 absolute -top-6 rounded-full shadow-sm" />
-                   <div className="w-3 h-3 bg-foreground rounded-full z-10" />
-                </div>
-                <div className="text-center">
-                   <span className="text-3xl font-bold block">119°</span>
-                   <span className="text-xs text-muted-foreground uppercase tracking-widest">South East</span>
-                </div>
+                <View style={[styles.compassNeedleContainer, { transform: [{ rotate: '119deg' }] }]}>
+                   <View style={styles.compassNeedle} />
+                   <View style={styles.compassCenter} />
+                </View>
+                <View style={styles.compassTextContainer}>
+                   <Text style={styles.compassDegrees}>119°</Text>
+                   <Text style={styles.compassDirection}>South East</Text>
+                </View>
                 
                 {/* Cardinal Points */}
-                <span className="absolute top-2 font-bold text-muted-foreground text-xs">N</span>
-                <span className="absolute bottom-2 font-bold text-muted-foreground text-xs">S</span>
-                <span className="absolute left-2 font-bold text-muted-foreground text-xs">W</span>
-                <span className="absolute right-2 font-bold text-muted-foreground text-xs">E</span>
-              </div>
-              <p className="mt-6 text-sm text-center text-muted-foreground">
+                <Text style={[styles.cardinalPoint, { top: 8, alignSelf: 'center' }]}>N</Text>
+                <Text style={[styles.cardinalPoint, { bottom: 8, alignSelf: 'center' }]}>S</Text>
+                <Text style={[styles.cardinalPoint, { left: 8, top: '45%' }]}>W</Text>
+                <Text style={[styles.cardinalPoint, { right: 8, top: '45%' }]}>E</Text>
+              </View>
+              <Text style={styles.qiblaHelpText}>
                 Align the arrow with the Kaaba icon to find Qibla.
-              </p>
+              </Text>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </View>
+      </View>
     </Layout>
   );
 }
 
 function PrayerAlertsDialog() {
+  const [isOpen, setIsOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [email, setEmail] = useState("ahmed@example.com");
@@ -123,78 +158,384 @@ function PrayerAlertsDialog() {
       title: "Preferences Saved",
       description: "You will now receive prayer alerts based on your settings.",
     });
+    setIsOpen(false);
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 shadow-sm">
-          <Bell className="w-4 h-4" /> Prayer Alerts
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Prayer Notifications</DialogTitle>
-          <DialogDescription>
-            Manage how you want to be notified for prayer times.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-6 py-4">
-          {/* Email Settings */}
-          <div className="space-y-4 border-b border-border pb-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" /> Email Alerts
-                </Label>
-                <p className="text-xs text-muted-foreground">Receive daily prayer schedules.</p>
-              </div>
-              <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
-            </div>
-            {emailEnabled && (
-              <div className="animate-in slide-in-from-top-2 fade-in duration-200">
-                <Label htmlFor="email" className="sr-only">Email</Label>
+    <>
+      <Button variant="outline" onPress={() => setIsOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Bell size={16} color="#0f172a" /> <Text>Prayer Alerts</Text>
+      </Button>
+
+      <Modal
+        visible={isOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Prayer Notifications</Text>
+                <Text style={styles.modalDescription}>Manage how you want to be notified.</Text>
+              </View>
+              <TouchableOpacity onPress={() => setIsOpen(false)}>
+                <X size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              {/* Email Settings */}
+              <View style={styles.settingRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.settingLabel}>
+                    <Mail size={16} color="#64748b" style={{ marginRight: 8 }} /> Email Alerts
+                  </Text>
+                  <Text style={styles.settingHelp}>Receive daily prayer schedules.</Text>
+                </View>
+                <Switch value={emailEnabled} onValueChange={setEmailEnabled} />
+              </View>
+              
+              {emailEnabled && (
                 <Input 
-                  id="email" 
                   value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                  onChangeText={setEmail} 
                   placeholder="Enter your email" 
+                  style={{ marginBottom: 16 }}
                 />
-              </div>
-            )}
-          </div>
+              )}
 
-          {/* SMS Settings */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-muted-foreground" /> SMS Alerts
-                </Label>
-                <p className="text-xs text-muted-foreground">Get reminders 15 mins before prayer.</p>
-              </div>
-              <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
-            </div>
-            {smsEnabled && (
-              <div className="animate-in slide-in-from-top-2 fade-in duration-200">
-                <Label htmlFor="phone" className="sr-only">Phone Number</Label>
+              {/* SMS Settings */}
+              <View style={styles.settingRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.settingLabel}>
+                    <MessageSquare size={16} color="#64748b" style={{ marginRight: 8 }} /> SMS Alerts
+                  </Text>
+                  <Text style={styles.settingHelp}>Get reminders 15 mins before prayer.</Text>
+                </View>
+                <Switch value={smsEnabled} onValueChange={setSmsEnabled} />
+              </View>
+
+              {smsEnabled && (
                 <Input 
-                  id="phone" 
                   value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
+                  onChangeText={setPhone} 
                   placeholder="+44 7700 900000" 
-                  type="tel"
                 />
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </View>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave}>Save Preferences</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <View style={styles.modalFooter}>
+              <Button onPress={handleSave}>Save Preferences</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    maxWidth: 800,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 32,
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  pageTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  locationRow: {
+    marginBottom: 8,
+  },
+  locationText: {
+    color: '#64748b',
+    fontSize: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  timezoneText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    color: '#059669',
+    fontWeight: '500',
+    fontSize: 16,
+  },
+  mainCard: {
+    backgroundColor: '#059669',
+    borderRadius: 16,
+    marginBottom: 32,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+  },
+  patternOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    opacity: 0.05,
+  },
+  mainCardContent: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  nextPrayerLabel: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  countdownText: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    fontFamily: 'monospace',
+    letterSpacing: -2,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  beginsText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 18,
+  },
+  grid: {
+    flexDirection: 'row',
+    gap: 32,
+    flexWrap: 'wrap',
+  },
+  gridCard: {
+    flex: 1,
+    minWidth: 300,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  cardHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  cardTitleWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardContent: {
+    padding: 16,
+  },
+  timetable: {
+    width: '100%',
+  },
+  timetableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  prayerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  prayerName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0f172a',
+  },
+  timeBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  timeText: {
+    fontFamily: 'monospace',
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  qiblaContent: {
+    alignItems: 'center',
+    padding: 32,
+  },
+  compassCircle: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 8,
+    borderColor: '#f1f5f9',
+    backgroundColor: 'rgba(241, 245, 249, 0.2)',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compassNeedleContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compassNeedle: {
+    width: 4,
+    height: 80,
+    backgroundColor: '#ef4444',
+    position: 'absolute',
+    top: 20,
+    borderRadius: 2,
+  },
+  compassCenter: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#0f172a',
+    zIndex: 10,
+  },
+  compassTextContainer: {
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  compassDegrees: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  compassDirection: {
+    fontSize: 12,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  cardinalPoint: {
+    position: 'absolute',
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#94a3b8',
+  },
+  qiblaHelpText: {
+    marginTop: 24,
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonText: {
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    fontSize: 14,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 425,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  modalFooter: {
+    padding: 20,
+    paddingTop: 0,
+    alignItems: 'flex-end',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0f172a',
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingHelp: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+});

@@ -1,10 +1,5 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native-web';
 import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket } from "lucide-react";
 import { useState } from "react";
 
@@ -59,135 +54,335 @@ const events = [
   }
 ];
 
+// Reusable Components
+const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.card, style]}>{children}</View>
+);
+
+const CardHeader = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardHeader, style]}>{children}</View>
+);
+
+const CardTitle = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <Text style={[styles.cardTitle, style]}>{children}</Text>
+);
+
+const CardContent = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardContent, style]}>{children}</View>
+);
+
+const CardFooter = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardFooter, style]}>{children}</View>
+);
+
+const Button = ({ children, onPress, variant = "primary", style, size = "default" }: { children: React.ReactNode, onPress?: () => void, variant?: "primary" | "outline" | "ghost", style?: any, size?: "default" | "icon" }) => {
+  const bg = variant === "primary" ? "#0f172a" : "transparent";
+  const border = variant === "outline" ? "#e2e8f0" : "transparent";
+  const textColor = variant === "primary" ? "#ffffff" : "#0f172a";
+  
+  const padding = size === "icon" ? 8 : 16;
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[styles.button, { backgroundColor: bg, borderColor: border, borderWidth: variant === "outline" ? 1 : 0, paddingHorizontal: padding }, style]}
+    >
+      <Text style={[styles.buttonText, { color: textColor }]}>{children}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const Badge = ({ children, variant = "default", style }: { children: React.ReactNode, variant?: string, style?: any }) => {
+  const bg = variant === "secondary" ? "#f1f5f9" : "#0f172a";
+  const color = variant === "secondary" ? "#0f172a" : "#ffffff";
+  return (
+    <View style={[styles.badge, { backgroundColor: bg }, style]}>
+      <Text style={[styles.badgeText, { color }]}>{children}</Text>
+    </View>
+  );
+};
+
+const Input = ({ value, onChangeText, placeholder, style, ...props }: any) => (
+  <TextInput
+    value={value}
+    onChangeText={onChangeText}
+    placeholder={placeholder}
+    style={[styles.input, style]}
+    placeholderTextColor="#94a3b8"
+    {...props}
+  />
+);
+
 export default function Events() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [activeTab, setActiveTab] = useState("upcoming");
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-heading font-bold">Community Events</h1>
-            <p className="text-muted-foreground mt-1">Gather, learn, and celebrate together.</p>
-          </div>
-          <Button className="gap-2 shadow-lg shadow-primary/20">
-            <CalendarIcon className="w-4 h-4" /> Host Event
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.pageTitle}>Community Events</Text>
+            <Text style={styles.pageSubtitle}>Gather, learn, and celebrate together.</Text>
+          </View>
+          <Button style={{ flexDirection: 'row', gap: 8 }}>
+            <CalendarIcon size={16} color="#ffffff" /> <Text style={{ color: '#ffffff' }}>Host Event</Text>
           </Button>
-        </div>
+        </View>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Events Feed */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <View style={styles.layoutGrid}>
+          {/* Main Feed */}
+          <View style={styles.mainFeed}>
+            {/* Search */}
+            <View style={styles.searchContainer}>
+              <Search size={20} color="#94a3b8" style={styles.searchIcon} />
               <Input 
                 placeholder="Search events..." 
-                className="pl-10 py-6 rounded-xl bg-card border-none shadow-sm text-base"
+                style={styles.searchInput}
               />
-            </div>
+            </View>
 
             {/* Tabs */}
-            <Tabs defaultValue="upcoming" className="w-full">
-              <TabsList className="bg-transparent p-0 mb-4">
-                <TabsTrigger value="upcoming" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-4">Upcoming</TabsTrigger>
-                <TabsTrigger value="popular" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-4">Popular</TabsTrigger>
-                <TabsTrigger value="my-events" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-4">My Events</TabsTrigger>
-              </TabsList>
+            <View style={styles.tabsList}>
+              {["Upcoming", "Popular", "My Events"].map((tab) => {
+                const key = tab.toLowerCase().replace(' ', '-');
+                const isActive = activeTab === key;
+                return (
+                  <TouchableOpacity 
+                    key={key}
+                    onPress={() => setActiveTab(key)}
+                    style={[styles.tabTrigger, isActive && styles.tabTriggerActive]}
+                  >
+                    <Text style={[styles.tabText, isActive && styles.tabTextActive]}>{tab}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-              <TabsContent value="upcoming" className="space-y-6">
-                {events.map((event) => (
-                  <Card key={event.id} className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row">
-                    <div className="sm:w-48 h-48 sm:h-auto relative shrink-0">
-                      <img 
-                        src={event.image} 
-                        alt={event.title} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                      />
-                      <div className="absolute top-3 left-3 bg-background/90 backdrop-blur-md rounded-lg p-2 text-center min-w-[50px]">
-                        <span className="block text-xs font-bold text-primary uppercase">{event.date.toLocaleString('default', { month: 'short' })}</span>
-                        <span className="block text-xl font-bold leading-none">{event.date.getDate()}</span>
-                      </div>
-                    </div>
+            <View style={{ gap: 24 }}>
+              {activeTab === 'upcoming' && events.map((event) => (
+                <Card key={event.id} style={styles.eventCard}>
+                  <View style={styles.imageWrapper}>
+                    <Image 
+                      source={{ uri: event.image }} 
+                      style={styles.eventImage}
+                    />
+                    <View style={styles.dateBadge}>
+                      <Text style={styles.dateMonth}>{event.date.toLocaleString('default', { month: 'short' })}</Text>
+                      <Text style={styles.dateDay}>{event.date.getDate()}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={{ flex: 1 }}>
+                    <CardHeader style={{ paddingBottom: 8 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <Badge variant="secondary">
+                          <Text>{event.category}</Text>
+                        </Badge>
+                        <Text style={{ fontWeight: '600', color: '#059669' }}>{event.price}</Text>
+                      </View>
+                      <CardTitle>{event.title}</CardTitle>
+                      <Text numberOfLines={2} style={styles.eventDesc}>{event.description}</Text>
+                    </CardHeader>
                     
-                    <div className="flex-1 flex flex-col">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <Badge variant="secondary" className="mb-2">{event.category}</Badge>
-                          <span className="text-sm font-medium text-primary">{event.price}</span>
-                        </div>
-                        <CardTitle className="text-xl">{event.title}</CardTitle>
-                        <CardDescription className="line-clamp-2">{event.description}</CardDescription>
-                      </CardHeader>
-                      
-                      <CardContent className="flex-1 pb-2">
-                        <div className="space-y-1.5 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> {event.time}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> {event.location}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" /> {event.attendees} attending
-                          </div>
-                        </div>
-                      </CardContent>
-                      
-                      <CardFooter className="pt-2 gap-2">
-                        <Button className="flex-1 gap-2">
-                          <Ticket className="w-4 h-4" /> RSVP
-                        </Button>
-                        <Button variant="outline" size="icon">
-                          <Share2 className="w-4 h-4" />
-                        </Button>
-                      </CardFooter>
-                    </div>
-                  </Card>
-                ))}
-              </TabsContent>
-              
-              <TabsContent value="popular">
-                 <div className="text-center py-10 text-muted-foreground">Most popular events will appear here.</div>
-              </TabsContent>
-              <TabsContent value="my-events">
-                 <div className="text-center py-10 text-muted-foreground">Events you've RSVP'd to will appear here.</div>
-              </TabsContent>
-            </Tabs>
-          </div>
+                    <CardContent style={{ flex: 1 }}>
+                      <View style={{ gap: 6 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Clock size={16} color="#64748b" style={{ marginRight: 8 }} /> 
+                          <Text style={styles.detailText}>{event.time}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <MapPin size={16} color="#64748b" style={{ marginRight: 8 }} /> 
+                          <Text style={styles.detailText}>{event.location}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Users size={16} color="#64748b" style={{ marginRight: 8 }} /> 
+                          <Text style={styles.detailText}>{event.attendees} attending</Text>
+                        </View>
+                      </View>
+                    </CardContent>
+                    
+                    <CardFooter style={{ flexDirection: 'row', gap: 8 }}>
+                      <Button style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
+                        <Ticket size={16} color="#ffffff" /> <Text style={{ color: '#ffffff' }}>RSVP</Text>
+                      </Button>
+                      <Button variant="outline" size="icon">
+                        <Share2 size={16} color="#0f172a" />
+                      </Button>
+                    </CardFooter>
+                  </View>
+                </Card>
+              ))}
+              {activeTab !== 'upcoming' && (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <Text style={{ color: '#94a3b8' }}>No events found.</Text>
+                </View>
+              )}
+            </View>
+          </View>
 
-          {/* Sidebar Calendar */}
-          <div className="space-y-6">
-            <Card className="border-none shadow-sm">
+          {/* Sidebar */}
+          <View style={styles.sidebar}>
+            <Card style={styles.sidebarCard}>
               <CardHeader>
-                <CardTitle>Calendar</CardTitle>
+                <CardTitle>Host an Event</CardTitle>
               </CardHeader>
               <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border w-full flex justify-center"
-                />
+                <Text style={{ color: '#64748b', marginBottom: 16 }}>Organize a meetup, lecture, or charity drive for the community.</Text>
+                <Button variant="outline" style={{ width: '100%' }}>Create Event</Button>
               </CardContent>
             </Card>
-
-            <Card className="bg-primary text-primary-foreground border-none shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Host an Event</CardTitle>
-                <CardDescription className="text-primary-foreground/80">
-                  Organize a meetup, lecture, or charity drive for the community.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="secondary" className="w-full text-primary">
-                  Create Event
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+          </View>
+        </View>
+      </View>
     </Layout>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    maxWidth: 1024,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 32,
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  pageTitle: { fontSize: 30, fontWeight: 'bold', color: '#0f172a', marginBottom: 4 },
+  pageSubtitle: { fontSize: 16, color: '#64748b' },
+  layoutGrid: {
+    flexDirection: 'row',
+    gap: 32,
+    flexWrap: 'wrap',
+  },
+  mainFeed: {
+    flex: 1,
+    minWidth: 300,
+  },
+  sidebar: {
+    width: 300,
+    display: 'none', // Hide on mobile default
+    // @ts-ignore
+    '@media (min-width: 1024px)': {
+      display: 'flex',
+    },
+  },
+  searchContainer: {
+    position: 'relative',
+    marginBottom: 24,
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 18,
+    zIndex: 1,
+  },
+  searchInput: {
+    paddingLeft: 48,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    fontSize: 16,
+  },
+  tabsList: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    gap: 8,
+  },
+  tabTrigger: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  tabTriggerActive: {
+    backgroundColor: 'rgba(15, 23, 42, 0.05)',
+  },
+  tabText: {
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: '#0f172a',
+  },
+  eventCard: {
+    flexDirection: 'row',
+    overflow: 'hidden',
+    flexWrap: 'wrap',
+  },
+  imageWrapper: {
+    width: 200,
+    height: 200,
+    position: 'relative',
+    // On mobile stack it
+    flexGrow: 1,
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  dateBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 8,
+    padding: 8,
+    alignItems: 'center',
+    minWidth: 50,
+  },
+  dateMonth: { fontSize: 10, fontWeight: 'bold', color: '#059669', textTransform: 'uppercase' },
+  dateDay: { fontSize: 20, fontWeight: 'bold', color: '#0f172a' },
+  eventDesc: { fontSize: 14, color: '#64748b', marginTop: 4 },
+  detailText: { fontSize: 14, color: '#64748b' },
+  sidebarCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  // Shared
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  cardHeader: { padding: 16 },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
+  cardContent: { padding: 16, paddingTop: 0 },
+  cardFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonText: { fontWeight: '500', fontSize: 14 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' },
+  badgeText: { fontSize: 12, fontWeight: '500' },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    fontSize: 14,
+  },
+});

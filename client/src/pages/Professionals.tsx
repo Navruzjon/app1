@@ -1,28 +1,6 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger,
-  DialogDescription 
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare, Check, ShieldCheck, Lock, Unlock, Phone, Mail } from "lucide-react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native-web';
+import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, Phone, Mail, Lock, Unlock, X, ShieldCheck, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -98,18 +76,79 @@ const professionals = [
   }
 ];
 
-// Haversine formula to calculate distance in miles
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 3959; // Radius of Earth in miles
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
+// Reusable Components
+const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.card, style]}>{children}</View>
+);
+
+const CardHeader = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardHeader, style]}>{children}</View>
+);
+
+const CardTitle = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <Text style={[styles.cardTitle, style]}>{children}</Text>
+);
+
+const CardContent = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardContent, style]}>{children}</View>
+);
+
+const CardFooter = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardFooter, style]}>{children}</View>
+);
+
+const Button = ({ children, onPress, variant = "primary", style, disabled }: { children: React.ReactNode, onPress?: () => void, variant?: "primary" | "outline" | "ghost" | "secondary", style?: any, disabled?: boolean }) => {
+  let bg = "#059669";
+  let border = "transparent";
+  let textColor = "#ffffff";
+
+  if (variant === "outline") {
+    bg = "transparent";
+    border = "#e2e8f0";
+    textColor = "#0f172a";
+  } else if (variant === "ghost") {
+    bg = "transparent";
+    textColor = "#0f172a";
+  } else if (variant === "secondary") {
+    bg = "#f1f5f9";
+    textColor = "#0f172a";
+  }
+
+  if (disabled) {
+    bg = "#e2e8f0";
+    textColor = "#94a3b8";
+  }
+  
+  return (
+    <TouchableOpacity 
+      onPress={disabled ? undefined : onPress} 
+      style={[styles.button, { backgroundColor: bg, borderColor: border, borderWidth: variant === "outline" ? 1 : 0 }, style]}
+    >
+      <Text style={[styles.buttonText, { color: textColor }]}>{children}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const Badge = ({ children, variant = "default", style }: { children: React.ReactNode, variant?: string, style?: any }) => {
+  const bg = variant === "secondary" ? "#fef3c7" : "#059669";
+  const color = variant === "secondary" ? "#b45309" : "#ffffff";
+  return (
+    <View style={[styles.badge, { backgroundColor: bg }, style]}>
+      <Text style={[styles.badgeText, { color }]}>{children}</Text>
+    </View>
+  );
+};
+
+const Input = ({ value, onChangeText, placeholder, style, ...props }: any) => (
+  <TextInput
+    value={value}
+    onChangeText={onChangeText}
+    placeholder={placeholder}
+    style={[styles.input, style]}
+    placeholderTextColor="#94a3b8"
+    {...props}
+  />
+);
 
 export default function Professionals() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,7 +169,7 @@ export default function Professionals() {
     if (!navigator.geolocation) {
       toast({
         title: "Error",
-        description: "Geolocation is not supported by your browser.",
+        description: "Geolocation is not supported.",
         variant: "destructive"
       });
       setIsLocating(false);
@@ -151,264 +190,245 @@ export default function Professionals() {
       },
       (error) => {
         console.error("Error getting location:", error);
-        toast({
-          title: "Location Error",
-          description: "Unable to retrieve your location. Please enable permissions.",
-          variant: "destructive"
-        });
         setIsLocating(false);
       }
     );
   };
 
-  const filteredProfessionals = professionals
-    .filter(pro => 
+  const filteredProfessionals = professionals.filter(pro => 
       pro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pro.profession.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pro.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
       pro.recentWork.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .map(pro => {
-      if (userLocation) {
-        const distance = calculateDistance(userLocation.lat, userLocation.lng, pro.location.lat, pro.location.lng);
-        return { ...pro, distance };
-      }
-      return pro;
-    })
-    .sort((a, b) => {
-      if (userLocation && 'distance' in a && 'distance' in b) {
-        return (a.distance as number) - (b.distance as number);
-      }
-      return 0;
-    });
+    );
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-heading font-bold">Community Professionals</h1>
-            <p className="text-muted-foreground mt-1">Find trusted experts within your community.</p>
-          </div>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.pageTitle}>Community Professionals</Text>
+            <Text style={styles.pageSubtitle}>Find trusted experts within your community.</Text>
+          </View>
           <RegisterProfessionalDialog />
-        </div>
+        </View>
 
         {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <View style={styles.filterBar}>
+          <View style={styles.searchContainer}>
+            <Search size={20} color="#94a3b8" style={styles.searchIcon} />
             <Input 
               placeholder="Search for doctors, projects, skills..." 
-              className="pl-10 py-6 rounded-xl bg-card border-none shadow-sm text-base"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
             />
-          </div>
-          <Button variant="outline" className="h-auto py-3 px-6 gap-2 bg-card border-none shadow-sm">
-            <Filter className="w-4 h-4" /> Filters
+          </View>
+          <Button variant="outline" style={{ flexDirection: 'row', gap: 8 }}>
+            <Filter size={16} color="#0f172a" /> <Text>Filters</Text>
           </Button>
           <Button 
-            variant={userLocation ? "default" : "outline"} 
-            className={`h-auto py-3 px-6 gap-2 shadow-sm ${!userLocation ? "bg-card border-none" : ""}`}
-            onClick={handleNearMe}
+            variant={userLocation ? "primary" : "outline"} 
+            onPress={handleNearMe}
+            style={{ flexDirection: 'row', gap: 8 }}
             disabled={isLocating}
           >
-            {isLocating ? (
-              <span className="animate-spin mr-1">◌</span>
-            ) : (
-              <MapPin className="w-4 h-4" />
-            )}
-            {userLocation ? "Near Me (Active)" : "Near Me"}
+            {isLocating ? <Text style={{ color: '#000' }}>...</Text> : <MapPin size={16} color={userLocation ? "#fff" : "#0f172a"} />} 
+            <Text>{userLocation ? "Near Me (Active)" : "Near Me"}</Text>
           </Button>
-        </div>
+        </View>
 
         {/* Professionals Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <View style={styles.grid}>
           {filteredProfessionals.map((pro) => {
              const isPending = contactRequests.includes(pro.id);
-             // @ts-ignore
-             const distance = pro.distance;
 
              return (
-            <Card key={pro.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
-              <CardHeader className="pb-3 flex flex-row gap-4 items-start">
-                <Avatar className="w-14 h-14 border-2 border-background shadow-sm">
-                  <AvatarImage src={pro.avatar} />
-                  <AvatarFallback>{pro.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg truncate">{pro.name}</CardTitle>
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none gap-1">
-                      <Star className="w-3 h-3 fill-current" />
-                      {pro.rating} ({pro.reviews})
+            <Card key={pro.id} style={styles.proCard}>
+              <CardHeader style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+                <Image 
+                  source={{ uri: pro.avatar }} 
+                  style={styles.avatar}
+                />
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Text numberOfLines={1} style={styles.proName}>{pro.name}</Text>
+                    <Badge variant="secondary" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Star size={12} color="#b45309" fill="currentColor" />
+                      <Text style={{ fontSize: 12, color: '#b45309' }}>{pro.rating} ({pro.reviews})</Text>
                     </Badge>
-                  </div>
-                  <p className="text-primary font-medium text-sm flex items-center gap-1">
-                    <Briefcase className="w-3 h-3" /> {pro.profession}
-                  </p>
-                  {distance !== undefined && (
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> {distance.toFixed(1)} miles away
-                    </p>
-                  )}
-                </div>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                    <Briefcase size={12} color="#059669" style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: 14, color: '#059669', fontWeight: '500' }}>{pro.profession}</Text>
+                  </View>
+                </View>
               </CardHeader>
               
-              <CardContent className="flex-1 space-y-4 text-sm">
-                <div className="flex flex-wrap gap-1.5">
+              <CardContent style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
                   {pro.specialties.map(tag => (
-                    <span key={tag} className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs">
-                      {tag}
-                    </span>
+                    <View key={tag} style={styles.tag}>
+                      <Text style={styles.tagText}>{tag}</Text>
+                    </View>
                   ))}
-                </div>
+                </View>
 
-                <div className="bg-muted/30 p-3 rounded-lg border border-border/50">
-                  <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">Recent Work</p>
-                  <p className="text-sm italic text-foreground/90 line-clamp-2">"{pro.recentWork}"</p>
-                </div>
+                <View style={styles.recentWorkBox}>
+                  <Text style={styles.recentWorkLabel}>Recent Work</Text>
+                  <Text numberOfLines={2} style={styles.recentWorkText}>"{pro.recentWork}"</Text>
+                </View>
 
-                <div className="space-y-2 pt-2 border-t border-border/50">
-                   <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <DollarSign className="w-4 h-4" /> Rate
-                      </span>
-                      <span className="font-medium text-foreground">{pro.rate}</span>
-                   </div>
-                   <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4" /> Location
-                      </span>
-                      <span className="font-medium text-foreground">{pro.location.town}, {pro.location.city}</span>
-                   </div>
-                   <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Globe className="w-4 h-4" /> Radius
-                      </span>
-                      <span className="font-medium text-foreground">{pro.radius}</span>
-                   </div>
-                   <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Building2 className="w-4 h-4" /> Masjid
-                      </span>
-                      <span className="font-medium text-foreground text-right max-w-[150px] truncate" title={pro.mosque}>{pro.mosque}</span>
-                   </div>
-                </div>
+                <View style={styles.detailsList}>
+                   <View style={styles.detailRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <DollarSign size={16} color="#64748b" style={{ marginRight: 6 }} /> 
+                        <Text style={styles.detailLabel}>Rate</Text>
+                      </View>
+                      <Text style={styles.detailValue}>{pro.rate}</Text>
+                   </View>
+                   <View style={styles.detailRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <MapPin size={16} color="#64748b" style={{ marginRight: 6 }} /> 
+                        <Text style={styles.detailLabel}>Location</Text>
+                      </View>
+                      <Text style={styles.detailValue}>{pro.location.town}, {pro.location.city}</Text>
+                   </View>
+                   <View style={styles.detailRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Globe size={16} color="#64748b" style={{ marginRight: 6 }} /> 
+                        <Text style={styles.detailLabel}>Radius</Text>
+                      </View>
+                      <Text style={styles.detailValue}>{pro.radius}</Text>
+                   </View>
+                   <View style={styles.detailRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Building2 size={16} color="#64748b" style={{ marginRight: 6 }} /> 
+                        <Text style={styles.detailLabel}>Masjid</Text>
+                      </View>
+                      <Text numberOfLines={1} style={[styles.detailValue, { maxWidth: 150 }]}>{pro.mosque}</Text>
+                   </View>
+                </View>
 
                 {/* Contact Details Section */}
                 {!pro.contactHidden ? (
-                  <div className="bg-green-50 p-3 rounded-lg border border-green-100 space-y-1 animate-in fade-in zoom-in-95">
-                    <div className="flex items-center gap-2 text-sm text-green-800">
-                      <Phone className="w-3 h-3" /> {pro.phone}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-green-800">
-                      <Mail className="w-3 h-3" /> {pro.email}
-                    </div>
-                    <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
-                      <Unlock className="w-3 h-3" /> Contact details revealed
-                    </p>
-                  </div>
+                  <View style={styles.contactBox}>
+                    <View style={styles.contactRow}>
+                      <Phone size={12} color="#166534" style={{ marginRight: 6 }} /> 
+                      <Text style={styles.contactText}>{pro.phone}</Text>
+                    </View>
+                    <View style={styles.contactRow}>
+                      <Mail size={12} color="#166534" style={{ marginRight: 6 }} /> 
+                      <Text style={styles.contactText}>{pro.email}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      <Unlock size={12} color="#16a34a" style={{ marginRight: 4 }} /> 
+                      <Text style={{ fontSize: 10, color: '#16a34a' }}>Contact details revealed</Text>
+                    </View>
+                  </View>
                 ) : (
-                  <div className="bg-muted/50 p-3 rounded-lg border border-border/50 flex items-center justify-center gap-2 text-muted-foreground text-xs">
-                    <Lock className="w-3 h-3" /> Contact details hidden
-                  </div>
+                  <View style={styles.hiddenContactBox}>
+                    <Lock size={12} color="#64748b" style={{ marginRight: 6 }} /> 
+                    <Text style={{ fontSize: 12, color: '#64748b' }}>Contact details hidden</Text>
+                  </View>
                 )}
-
               </CardContent>
               
-              <CardFooter className="pt-2 gap-2">
+              <CardFooter style={{ flexDirection: 'row', gap: 8 }}>
                 {pro.contactHidden ? (
-                   isPending ? (
-                     <Button className="flex-1" disabled variant="secondary">Request Sent</Button>
-                   ) : (
-                     <Button className="flex-1" onClick={() => handleRequestContact(pro.id)}>Request Contact</Button>
-                   )
+                   <Button 
+                    style={{ flex: 1 }} 
+                    disabled={isPending} 
+                    variant={isPending ? "secondary" : "primary"}
+                    onPress={() => !isPending && handleRequestContact(pro.id)}
+                  >
+                     {isPending ? "Request Sent" : "Request Contact"}
+                   </Button>
                 ) : (
-                   <Button className="flex-1 bg-green-600 hover:bg-green-700">Call Now</Button>
+                   <Button style={{ flex: 1, backgroundColor: '#16a34a' }}>Call Now</Button>
                 )}
                 <RateProfessionalDialog professional={pro} />
               </CardFooter>
             </Card>
           );
           })}
-        </div>
-      </div>
+        </View>
+      </View>
     </Layout>
   );
 }
 
 function RateProfessionalDialog({ professional }: { professional: any }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     toast({
       title: "Review Submitted",
       description: "Thank you for your feedback!",
     });
+    setIsOpen(false);
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon" title="Rate Service">
-          <Star className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Rate {professional.name}</DialogTitle>
-          <DialogDescription>
-            Share your experience with this professional.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="flex flex-col items-center gap-2 mb-2">
-             <Label>Your Rating</Label>
-             <div className="flex gap-1">
-               {[1, 2, 3, 4, 5].map((star) => (
-                 <button
-                   key={star}
-                   type="button"
-                   className="focus:outline-none transition-transform hover:scale-110"
-                   onMouseEnter={() => setHoverRating(star)}
-                   onMouseLeave={() => setHoverRating(0)}
-                   onClick={() => setRating(star)}
-                 >
-                   <Star 
-                     className={`w-8 h-8 ${
-                       star <= (hoverRating || rating) 
-                         ? "fill-amber-400 text-amber-400" 
-                         : "text-muted-foreground/30"
-                     }`} 
-                   />
-                 </button>
-               ))}
-             </div>
-          </div>
+    <>
+      <Button variant="outline" onPress={() => setIsOpen(true)}>
+        <Star size={16} color="#0f172a" />
+      </Button>
 
-          <div className="grid gap-2">
-            <Label htmlFor="review">Review</Label>
-            <Textarea id="review" placeholder="Was the service professional? timely? Describe your experience..." rows={4} />
-          </div>
+      <Modal
+        visible={isOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Rate {professional.name}</Text>
+                <Text style={styles.modalDescription}>Share your experience with this professional.</Text>
+              </View>
+              <TouchableOpacity onPress={() => setIsOpen(false)}>
+                <X size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                 <Text style={styles.label}>Your Rating</Text>
+                 <View style={{ flexDirection: 'row', gap: 8 }}>
+                   {[1, 2, 3, 4, 5].map((star) => (
+                     <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                       <Star 
+                         size={32} 
+                         color={star <= rating ? "#fbbf24" : "#e2e8f0"} 
+                         fill={star <= rating ? "#fbbf24" : "none"}
+                       />
+                     </TouchableOpacity>
+                   ))}
+                 </View>
+              </View>
 
-          <Button type="submit" disabled={rating === 0}>Submit Review</Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={styles.label}>Review</Text>
+                <Input placeholder="Was the service professional? timely? Describe your experience..." multiline numberOfLines={4} style={{ height: 100, textAlignVertical: 'top', paddingTop: 10 }} />
+              </View>
+
+              <Button onPress={handleSubmit} disabled={rating === 0}>Submit Review</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
 function RegisterProfessionalDialog() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
-  const [radius, setRadius] = useState([5]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (step < 3) {
       setStep(step + 1);
       return;
@@ -419,191 +439,377 @@ function RegisterProfessionalDialog() {
       description: "Your subscription is active and profile is live.",
     });
     setOpen(false);
-    setStep(1); // Reset for next time
+    setStep(1);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg shadow-primary/20">
-          <Briefcase className="w-4 h-4" /> List Your Service
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {step === 1 && "Professional Registration"}
-            {step === 2 && "Choose Your Plan"}
-            {step === 3 && "Secure Payment"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 1 && "Share your expertise with the community."}
-            {step === 2 && "Join the trusted network of community professionals."}
-            {step === 3 && "Complete your subscription to go live."}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Button onPress={() => setOpen(true)} style={{ flexDirection: 'row', gap: 8 }}>
+        <Briefcase size={16} color="#ffffff" /> <Text style={{ color: '#ffffff', fontWeight: '600' }}>List Your Service</Text>
+      </Button>
 
-        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          {/* Step 1: Details */}
-          {step === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="profession">Profession/Title</Label>
-                  <Input id="profession" placeholder="e.g. Plumber, Tutor" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="rate">Rate / Price</Label>
-                  <Input id="rate" placeholder="e.g. £50/hr or Fixed Price" required />
-                </div>
-              </div>
+      <Modal
+        visible={open}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>
+                  {step === 1 && "Professional Registration"}
+                  {step === 2 && "Choose Your Plan"}
+                  {step === 3 && "Secure Payment"}
+                </Text>
+                <Text style={styles.modalDescription}>
+                  {step === 1 && "Share your expertise with the community."}
+                  {step === 2 && "Join the trusted network of community professionals."}
+                  {step === 3 && "Complete your subscription to go live."}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setOpen(false)}>
+                <X size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
 
-              <div className="grid gap-2">
-                <Label htmlFor="specialties">Specialties (comma separated)</Label>
-                <Input id="specialties" placeholder="e.g. Emergency repairs, GCSE Math, Commercial Law" />
-              </div>
+            <View style={styles.modalBody}>
+              {step === 1 && (
+                <View>
+                  <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Profession/Title</Text>
+                      <Input placeholder="e.g. Plumber" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Rate / Price</Text>
+                      <Input placeholder="e.g. £50/hr" />
+                    </View>
+                  </View>
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={styles.label}>Specialties</Text>
+                    <Input placeholder="e.g. Emergency repairs" />
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>City</Text>
+                      <Input placeholder="e.g. London" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Affiliated Masjid</Text>
+                      <Input placeholder="Closest Masjid" />
+                    </View>
+                  </View>
+                </View>
+              )}
 
-              <div className="space-y-3 border-t border-border pt-4 mt-2">
-                <h4 className="font-medium text-sm">Location & Service Area</h4>
-                
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="grid gap-2">
-                    <Label htmlFor="city">Base City</Label>
-                    <Input id="city" placeholder="e.g. London" required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="mosque">Affiliated Masjid</Label>
-                    <Input id="mosque" placeholder="Closest Masjid to you" />
-                  </div>
-                </div>
+              {step === 2 && (
+                <View>
+                  <View style={styles.planCard}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <View>
+                        <Text style={styles.planTitle}>Professional Tier</Text>
+                        <Text style={styles.planDesc}>For serious experts.</Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.planPrice}>$5.00</Text>
+                        <Text style={styles.planPeriod}>/month</Text>
+                      </View>
+                    </View>
+                    <View style={{ gap: 8 }}>
+                      {["Verified Professional Badge", "Unlimited Client Leads", "Featured in Search"].map(f => (
+                        <View key={f} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Check size={16} color="#059669" />
+                          <Text style={{ fontSize: 14 }}>{f}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              )}
 
-                <div className="grid gap-4 pt-2">
-                  <div className="flex justify-between">
-                    <Label>Service Radius</Label>
-                    <span className="text-sm text-muted-foreground">{radius} miles</span>
-                  </div>
-                  <Slider 
-                    defaultValue={[5]} 
-                    max={50} 
-                    step={1} 
-                    value={radius}
-                    onValueChange={setRadius}
-                    className="py-4"
-                  />
-                  <p className="text-xs text-muted-foreground">How far are you willing to travel to serve the community?</p>
-                </div>
-              </div>
-            </div>
-          )}
+              {step === 3 && (
+                <View>
+                  <View style={styles.summaryBox}>
+                    <Text style={{ fontWeight: '500' }}>Professional Tier Subscription</Text>
+                    <Text style={{ fontWeight: 'bold' }}>$5.00</Text>
+                  </View>
+                  
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={styles.label}>Name on Card</Text>
+                    <Input placeholder="Ahmed Hassan" />
+                  </View>
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={styles.label}>Card Number</Text>
+                    <Input placeholder="0000 0000 0000 0000" />
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Expiry</Text>
+                      <Input placeholder="MM/YY" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>CVC</Text>
+                      <Input placeholder="123" />
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
 
-          {/* Step 2: Plan Selection */}
-          {step === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="border-2 border-primary bg-primary/5 rounded-xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-xl">
-                  POPULAR
-                </div>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-xl">Professional Tier</h3>
-                    <p className="text-muted-foreground text-sm">For serious experts growing their business.</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold">$5.00</span>
-                    <span className="text-muted-foreground text-sm">/month</span>
-                  </div>
-                </div>
-                
-                <ul className="space-y-3 text-sm">
-                  {[
-                    "Verified Professional Badge",
-                    "Unlimited Client Leads",
-                    "Featured in Community Search",
-                    "Access to Client Reviews",
-                    "Affiliated Mosque Verification"
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                        <Check className="w-3 h-3" />
-                      </div>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="border rounded-xl p-4 opacity-60 grayscale">
-                <div className="flex justify-between items-center">
-                   <h3 className="font-semibold">Free Basic</h3>
-                   <span className="text-sm font-medium">$0/mo</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Basic listing only. No featured placement or lead details.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Payment */}
-          {step === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="bg-muted/30 p-4 rounded-lg border border-border mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-sm">Professional Tier Subscription</span>
-                  <span className="font-bold">$5.00</span>
-                </div>
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>Billing Cycle</span>
-                  <span>Monthly</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="card-name">Name on Card</Label>
-                  <Input id="card-name" placeholder="Ahmed Hassan" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="card-number">Card Number</Label>
-                  <div className="relative">
-                    <Input id="card-number" placeholder="0000 0000 0000 0000" />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                       <div className="w-8 h-5 bg-muted rounded flex items-center justify-center text-[8px] font-bold text-muted-foreground border border-border">VISA</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="expiry">Expiry</Label>
-                    <Input id="expiry" placeholder="MM/YY" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="cvc">CVC</Label>
-                    <Input id="cvc" placeholder="123" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                <ShieldCheck className="w-4 h-4 text-green-600" />
-                <span>Payments are securely processed. You can cancel anytime.</span>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-between pt-4 border-t border-border mt-2">
-            {step > 1 ? (
-              <Button type="button" variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
-            ) : (
-               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            )}
-            
-            <Button type="submit" className="min-w-[120px]">
-              {step === 1 && "Next: Select Plan"}
-              {step === 2 && "Next: Payment"}
-              {step === 3 && "Pay & Join"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <View style={styles.modalFooter}>
+              <Button variant="ghost" onPress={() => step > 1 ? setStep(step - 1) : setOpen(false)} style={{ marginRight: 8 }}>
+                {step > 1 ? "Back" : "Cancel"}
+              </Button>
+              <Button onPress={handleSubmit}>
+                {step === 1 ? "Next: Select Plan" : step === 2 ? "Next: Payment" : "Pay & Join"}
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    maxWidth: 1024,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 32,
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  pageTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  pageSubtitle: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  filterBar: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 32,
+    flexWrap: 'wrap',
+  },
+  searchContainer: {
+    flex: 1,
+    minWidth: 200,
+    position: 'relative',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 18,
+    zIndex: 1,
+  },
+  searchInput: {
+    paddingLeft: 48,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    fontSize: 16,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
+  },
+  proCard: {
+    flex: 1,
+    minWidth: 320,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#f1f5f9',
+  },
+  proName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  tag: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  tagText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  recentWorkBox: {
+    backgroundColor: 'rgba(241, 245, 249, 0.5)',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    marginBottom: 16,
+  },
+  recentWorkLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748b',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  recentWorkText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#0f172a',
+  },
+  detailsList: {
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 16,
+    gap: 8,
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailLabel: {
+    color: '#64748b',
+    fontSize: 14,
+  },
+  detailValue: {
+    fontWeight: '500',
+    color: '#0f172a',
+    fontSize: 14,
+  },
+  contactBox: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#dcfce7',
+    padding: 12,
+    borderRadius: 8,
+    gap: 4,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  contactText: {
+    fontSize: 14,
+    color: '#166534',
+  },
+  hiddenContactBox: {
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Shared
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  cardHeader: { padding: 16 },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
+  cardContent: { padding: 16, paddingTop: 0 },
+  cardFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonText: { fontWeight: '500', fontSize: 14 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  badgeText: { fontSize: 12, fontWeight: '500' },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    fontSize: 14,
+  },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 500,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 4 },
+  modalDescription: { fontSize: 14, color: '#64748b' },
+  modalBody: { padding: 20 },
+  modalFooter: { padding: 20, paddingTop: 0, flexDirection: 'row', justifyContent: 'flex-end' },
+  label: { fontSize: 14, fontWeight: '500', marginBottom: 6, color: '#0f172a' },
+  planCard: {
+    borderWidth: 2,
+    borderColor: '#059669',
+    backgroundColor: '#ecfdf5',
+    borderRadius: 12,
+    padding: 16,
+  },
+  planTitle: { fontSize: 18, fontWeight: 'bold', color: '#0f172a' },
+  planDesc: { fontSize: 12, color: '#64748b' },
+  planPrice: { fontSize: 20, fontWeight: 'bold', color: '#0f172a' },
+  planPeriod: { fontSize: 12, color: '#64748b' },
+  summaryBox: {
+    backgroundColor: '#f1f5f9',
+    padding: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+});

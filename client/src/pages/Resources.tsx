@@ -1,84 +1,298 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { PlayCircle, FileText, Download, Search, Clock } from "lucide-react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native-web';
+import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket, PlayCircle, FileText, Download, Check } from "lucide-react";
+import { useState } from "react";
 import { resources } from "@/lib/mockData";
+
+// Reusable Components
+const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.card, style]}>{children}</View>
+);
+
+const CardHeader = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardHeader, style]}>{children}</View>
+);
+
+const CardTitle = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <Text style={[styles.cardTitle, style]}>{children}</Text>
+);
+
+const CardContent = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardContent, style]}>{children}</View>
+);
+
+const CardFooter = ({ children, style }: { children: React.ReactNode, style?: any }) => (
+  <View style={[styles.cardFooter, style]}>{children}</View>
+);
+
+const Button = ({ children, onPress, variant = "primary", style }: { children: React.ReactNode, onPress?: () => void, variant?: "primary" | "outline" | "ghost" | "link", style?: any }) => {
+  let bg = "#059669";
+  let border = "transparent";
+  let textColor = "#ffffff";
+
+  if (variant === "outline") {
+    bg = "transparent";
+    border = "#e2e8f0";
+    textColor = "#0f172a";
+  } else if (variant === "link") {
+    bg = "transparent";
+    textColor = "#059669";
+  } else if (variant === "ghost") {
+    bg = "transparent";
+    textColor = "#0f172a";
+  }
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[styles.button, { backgroundColor: bg, borderColor: border, borderWidth: variant === "outline" ? 1 : 0 }, style]}
+    >
+      <Text style={[styles.buttonText, { color: textColor }]}>{children}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const Badge = ({ children, variant = "default", style }: { children: React.ReactNode, variant?: string, style?: any }) => {
+  const bg = variant === "secondary" ? "#f1f5f9" : "#059669";
+  const color = variant === "secondary" ? "#0f172a" : "#ffffff";
+  return (
+    <View style={[styles.badge, { backgroundColor: bg }, style]}>
+      <Text style={[styles.badgeText, { color }]}>{children}</Text>
+    </View>
+  );
+};
 
 export default function Resources() {
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="bg-sidebar-primary text-primary-foreground rounded-3xl p-8 md:p-12 relative overflow-hidden">
-          <div className="relative z-10 max-w-2xl">
-            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-4">Knowledge is Light</h1>
-            <p className="text-primary-foreground/80 text-lg mb-8">Access curated Islamic lectures, articles, and books to deepen your understanding and strengthen your faith.</p>
-            <div className="flex gap-2 max-w-md bg-background/10 backdrop-blur-md p-1 rounded-xl border border-white/20">
-              <Search className="w-5 h-5 text-primary-foreground ml-3 mt-3" />
-              <input 
-                type="text" 
+      <View style={styles.container}>
+        <View style={styles.heroBanner}>
+          <View style={{ maxWidth: 600, zIndex: 10 }}>
+            <Text style={styles.heroTitle}>Knowledge is Light</Text>
+            <Text style={styles.heroSubtitle}>Access curated Islamic lectures, articles, and books to deepen your understanding and strengthen your faith.</Text>
+            <View style={styles.heroSearchBox}>
+              <Search size={20} color="rgba(255,255,255,0.7)" />
+              <TextInput 
                 placeholder="Search library..." 
-                className="bg-transparent border-none text-primary-foreground placeholder:text-primary-foreground/50 focus:outline-none w-full p-2"
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                style={styles.heroInput}
               />
-            </div>
-          </div>
-          {/* Abstract decorative circles */}
-          <div className="absolute -right-20 -top-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -right-10 -bottom-20 w-80 h-80 bg-amber-400/20 rounded-full blur-3xl" />
-        </div>
+            </View>
+          </View>
+          {/* Decorative elements simulated */}
+          <View style={[styles.decorativeCircle, { right: -50, top: -50, backgroundColor: 'rgba(255,255,255,0.1)' }]} />
+          <View style={[styles.decorativeCircle, { right: 20, bottom: -50, backgroundColor: 'rgba(251, 191, 36, 0.2)' }]} />
+        </View>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-heading font-semibold">Featured Resources</h2>
-            <Button variant="link" className="text-primary">View All</Button>
-          </div>
+        <View style={{ marginTop: 32 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={styles.sectionTitle}>Featured Resources</Text>
+            <Button variant="link">View All</Button>
+          </View>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <View style={styles.grid}>
             {resources.map((resource) => (
-              <Card key={resource.id} className="group border-none shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={resource.thumbnail} 
-                    alt={resource.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              <Card key={resource.id} style={styles.resourceCard}>
+                <View style={styles.imageContainer}>
+                  <Image 
+                    source={{ uri: resource.thumbnail }} 
+                    style={styles.resourceImage}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <Badge className="absolute top-3 left-3 bg-background/90 text-foreground backdrop-blur-md border-none">
-                    {resource.type}
+                  <View style={styles.overlayGradient} />
+                  <Badge style={styles.typeBadge}>
+                    <Text style={{ fontSize: 12, fontWeight: '600' }}>{resource.type}</Text>
                   </Badge>
-                  <div className="absolute bottom-3 right-3">
-                     <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                        {resource.type === 'Series' ? <PlayCircle className="w-5 h-5" /> : 
-                         resource.type === 'PDF' ? <Download className="w-5 h-5" /> : 
-                         <FileText className="w-5 h-5" />}
-                     </div>
-                  </div>
-                </div>
-                <CardContent className="p-5">
-                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{resource.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{resource.author}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    {resource.duration}
-                  </div>
+                  <View style={styles.playButton}>
+                     {resource.type === 'Series' ? <PlayCircle size={24} color="#fff" /> : 
+                      resource.type === 'PDF' ? <Download size={24} color="#fff" /> : 
+                      <FileText size={24} color="#fff" />}
+                  </View>
+                </View>
+                <CardContent style={{ padding: 20 }}>
+                  <Text numberOfLines={2} style={styles.resourceTitle}>{resource.title}</Text>
+                  <Text style={styles.resourceAuthor}>{resource.author}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+                    <Clock size={12} color="#94a3b8" style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: 12, color: '#64748b' }}>{resource.duration}</Text>
+                  </View>
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
+          </View>
+        </View>
         
         {/* Categories Grid */}
-        <div>
-            <h2 className="text-xl font-heading font-semibold mb-6">Browse Topics</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <View style={{ marginTop: 40 }}>
+            <Text style={styles.sectionTitle}>Browse Topics</Text>
+            <View style={styles.categoryGrid}>
                 {['Aqeedah', 'Fiqh', 'History', 'Quran', 'Hadith', 'Spirituality', 'Family', 'Finance', 'Social Issues', 'Dua', 'Arabic', 'New Muslims'].map(topic => (
-                    <div key={topic} className="aspect-square rounded-2xl bg-muted/50 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:text-primary cursor-pointer transition-all">
-                        <span className="font-medium">{topic}</span>
-                    </div>
+                    <TouchableOpacity key={topic} style={styles.categoryBox}>
+                        <Text style={styles.categoryText}>{topic}</Text>
+                    </TouchableOpacity>
                 ))}
-            </div>
-        </div>
-      </div>
+            </View>
+        </View>
+      </View>
     </Layout>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    maxWidth: 1024,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  heroBanner: {
+    backgroundColor: '#0f172a',
+    borderRadius: 24,
+    padding: 48,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroTitle: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  heroSubtitle: {
+    fontSize: 18,
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: 32,
+    lineHeight: 28,
+  },
+  heroSearchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 16,
+    maxWidth: 400,
+  },
+  heroInput: {
+    flex: 1,
+    height: 48,
+    color: '#ffffff',
+    marginLeft: 12,
+    fontSize: 16,
+    borderWidth: 0,
+    // @ts-ignore
+    outlineStyle: 'none',
+  },
+  decorativeCircle: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    // @ts-ignore
+    filter: 'blur(60px)', // React Native Web supports filter
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
+  },
+  resourceCard: {
+    flex: 1,
+    minWidth: 280,
+    maxWidth: 350,
+    overflow: 'hidden',
+    borderWidth: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+  },
+  imageContainer: {
+    height: 192,
+    position: 'relative',
+  },
+  resourceImage: {
+    width: '100%',
+    height: '100%',
+  },
+  overlayGradient: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  typeBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  playButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backdropFilter: 'blur(4px)',
+  },
+  resourceTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  resourceAuthor: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginTop: 16,
+  },
+  categoryBox: {
+    width: 100, // Fixed size roughly for square look
+    height: 100,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  categoryText: {
+    fontWeight: '500',
+    color: '#0f172a',
+    fontSize: 14,
+  },
+  // Shared
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  cardHeader: { padding: 16 },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: '#0f172a' },
+  cardContent: { padding: 16 },
+  cardFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  buttonText: { fontWeight: '500', fontSize: 14 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  badgeText: { fontSize: 12, fontWeight: '500' },
+});
