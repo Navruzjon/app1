@@ -70,7 +70,8 @@ export const groups = [
       city: "London",
       town: "Whitechapel"
     },
-    mosque: "East London Mosque"
+    mosque: "East London Mosque",
+    type: "community"
   },
   {
     id: 2,
@@ -83,7 +84,8 @@ export const groups = [
       city: "Birmingham",
       town: "Small Heath"
     },
-    mosque: "Green Lane Masjid"
+    mosque: "Green Lane Masjid",
+    type: "community"
   },
   {
     id: 3,
@@ -96,7 +98,36 @@ export const groups = [
       city: "Dearborn",
       town: "Dearborn"
     },
-    mosque: "Islamic Center of America"
+    mosque: "Islamic Center of America",
+    type: "community"
+  },
+  {
+    id: 4,
+    name: "Ask the Imam - ELM",
+    members: 3200,
+    description: "Direct Q&A with the Imams of East London Mosque. Fiqh, advice, and community matters.",
+    icon: MessageCircle,
+    location: {
+      country: "UK",
+      city: "London",
+      town: "Whitechapel"
+    },
+    mosque: "East London Mosque",
+    type: "imam_qa"
+  },
+  {
+    id: 5,
+    name: "GLM Imam Q&A",
+    members: 1500,
+    description: "Official group for religious questions answered by Green Lane Masjid scholars.",
+    icon: MessageCircle,
+    location: {
+      country: "UK",
+      city: "Birmingham",
+      town: "Small Heath"
+    },
+    mosque: "Green Lane Masjid",
+    type: "imam_qa"
   }
 ];
 
