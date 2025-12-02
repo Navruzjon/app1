@@ -11,6 +11,7 @@ import Resources from "@/pages/Resources";
 import Prayer from "@/pages/Prayer";
 import Charity from "@/pages/Charity";
 import Professionals from "@/pages/Professionals";
+import Events from "@/pages/Events";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/profile" component={Profile} />
       <Route path="/groups" component={Groups} />
+      <Route path="/events" component={Events} />
       <Route path="/professionals" component={Professionals} />
       <Route path="/resources" component={Resources} />
       <Route path="/prayer" component={Prayer} />
