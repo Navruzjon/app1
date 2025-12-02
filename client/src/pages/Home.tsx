@@ -3,8 +3,17 @@ import Layout from "@/components/layout/Layout";
 import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera, Smartphone } from "@/components/ui/Icons";
 import { posts, prayerTimes, currentUser } from "@/lib/mockData";
 import patternBg from "@assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png";
-import { QRCodeSVG } from 'qrcode.react';
 import { useState, useEffect } from 'react';
+
+// Dynamic import for QR Code to avoid Native crashes
+let QRCodeSVG: any = null;
+if (Platform.OS === 'web') {
+  try {
+    QRCodeSVG = require('qrcode.react').QRCodeSVG;
+  } catch (e) {
+    console.warn('QRCodeSVG not available');
+  }
+}
 
 export default function Home() {
   const [expoUrl, setExpoUrl] = useState('');
@@ -172,7 +181,7 @@ export default function Home() {
           </View>
 
           {/* Mobile App QR Code Widget */}
-          {Platform.OS === 'web' && expoUrl && (
+          {Platform.OS === 'web' && expoUrl && QRCodeSVG && (
             <View style={styles.widgetCard}>
               <View style={styles.widgetHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
