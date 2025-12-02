@@ -9,6 +9,7 @@ import Profile from "@/pages/Profile";
 import Groups from "@/pages/Groups";
 import Resources from "@/pages/Resources";
 import Prayer from "@/pages/Prayer";
+import Charity from "@/pages/Charity";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/groups" component={Groups} />
       <Route path="/resources" component={Resources} />
       <Route path="/prayer" component={Prayer} />
+      <Route path="/charity" component={Charity} />
       <Route component={NotFound} />
     </Switch>
   );

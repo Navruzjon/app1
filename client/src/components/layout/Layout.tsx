@@ -1,10 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, Users, BookOpen, Moon, Settings, Menu, X } from "lucide-react";
+import { Home, User, Users, BookOpen, Moon, Settings, Menu, X, Heart, Bell, Check } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/lib/mockData";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { currentUser, notifications } from "@/lib/mockData";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -15,8 +17,46 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { icon: Users, label: "Groups", href: "/groups" },
     { icon: BookOpen, label: "Resources", href: "/resources" },
     { icon: Moon, label: "Prayer & Qibla", href: "/prayer" },
+    { icon: Heart, label: "Charity", href: "/charity" },
     { icon: User, label: "Profile", href: "/profile" },
   ];
+
+  const NotificationsPopover = () => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="w-5 h-5 text-muted-foreground" />
+          {notifications.some(n => !n.read) && (
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-background" />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="end">
+        <div className="p-4 border-b border-border">
+          <h4 className="font-semibold leading-none">Notifications</h4>
+          <p className="text-xs text-muted-foreground mt-1">You have {notifications.filter(n => !n.read).length} unread messages.</p>
+        </div>
+        <ScrollArea className="h-80">
+          <div className="divide-y divide-border">
+            {notifications.map((notification) => (
+              <div key={notification.id} className={`p-4 flex gap-3 hover:bg-muted/50 transition-colors ${!notification.read ? 'bg-primary/5' : ''}`}>
+                <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${!notification.read ? 'bg-primary' : 'bg-transparent'}`} />
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium leading-none">{notification.title}</p>
+                  <p className="text-xs text-muted-foreground">{notification.message}</p>
+                  <p className="text-[10px] text-muted-foreground pt-1">{notification.time}</p>
+                </div>
+                {notification.read && <Check className="w-3 h-3 text-muted-foreground" />}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+        <div className="p-2 border-t border-border">
+           <Button variant="ghost" size="sm" className="w-full text-xs">Mark all as read</Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
@@ -81,20 +121,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <span className="font-heading font-bold text-xl">UmmahLink</span>
         </div>
         
-        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="w-6 h-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72 bg-sidebar border-r border-sidebar-border">
-            <NavContent />
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <NotificationsPopover />
+          <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72 bg-sidebar border-r border-sidebar-border">
+              <NavContent />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 lg:ml-72 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out">
+      <main className="flex-1 md:ml-64 lg:ml-72 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out relative">
+        {/* Desktop Notification Bell (Floating Top Right) */}
+        <div className="hidden md:block absolute top-6 right-8 z-20">
+           <NotificationsPopover />
+        </div>
+        
         <div className="max-w-5xl mx-auto p-4 md:p-8 animate-in fade-in duration-500">
           {children}
         </div>

@@ -116,3 +116,63 @@ export const resources = [
     thumbnail: "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=500&q=60"
   }
 ];
+
+export const notifications = [
+  {
+    id: 1,
+    title: "Prayer Time Soon",
+    message: "Asr prayer is in 15 minutes.",
+    time: "10m ago",
+    type: "prayer",
+    read: false
+  },
+  {
+    id: 2,
+    title: "New Event in Fajr Warriors",
+    message: "Group Qiyam Night scheduled for this Friday.",
+    time: "1h ago",
+    type: "group",
+    read: false
+  },
+  {
+    id: 3,
+    title: "Donation Update",
+    message: "Your donation to the Water Well Project has been received. JazakAllah Khair!",
+    time: "5h ago",
+    type: "charity",
+    read: true
+  }
+];
+
+export const charityCauses = [
+  {
+    id: 1,
+    title: "Clean Water for All",
+    organization: "Global Relief Trust",
+    image: "/attached_assets/generated_images/water_well_construction_in_arid_village.png",
+    target: 5000,
+    raised: 3250,
+    category: "Sadaqah Jariyah",
+    description: "Build deep water wells in drought-affected regions to provide clean drinking water for entire villages."
+  },
+  {
+    id: 2,
+    title: "Orphan Sponsorship",
+    organization: "Mercy Keepers",
+    image: "/attached_assets/generated_images/happy_diverse_children_in_classroom.png",
+    target: 12000,
+    raised: 8450,
+    category: "Zakat Eligible",
+    description: "Provide education, healthcare, and food security for orphans in conflict zones."
+  },
+  {
+    id: 3,
+    title: "Winter Emergency Kit",
+    organization: "Ummah United",
+    image: "/attached_assets/generated_images/emergency_food_distribution_trucks.png",
+    target: 2500,
+    raised: 450,
+    category: "Emergency",
+    description: "Blankets, heaters, and warm coats for refugees facing harsh winter conditions."
+  }
+];
