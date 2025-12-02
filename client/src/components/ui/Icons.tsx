@@ -46,5 +46,6 @@ export {
   User,
   Settings,
   Menu,
-  BookOpen
+  BookOpen,
+  Smartphone
 } from "lucide-react";

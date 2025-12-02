@@ -1,10 +1,36 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, FlatList, Platform } from 'react-native-web';
 import Layout from "@/components/layout/Layout";
-import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera } from "@/components/ui/Icons";
+import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera, Smartphone } from "@/components/ui/Icons";
 import { posts, prayerTimes, currentUser } from "@/lib/mockData";
 import patternBg from "@assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png";
+import { QRCodeSVG } from 'qrcode.react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [expoUrl, setExpoUrl] = useState('');
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      // Construct Expo URL based on current host
+      // Replit: <repl>-5000.<region>.replit.dev -> <repl>-8081.<region>.replit.dev
+      if (host.includes('replit.dev')) {
+        // Naive replacement of 5000 with 8081 if it exists in the URL
+        if (host.includes('5000')) {
+          setExpoUrl(`exp://${host.replace('5000', '8081')}`);
+        } else {
+          // Fallback: try to construct it assuming standard port mapping wasn't explicit
+          // This is tricky without knowing exact ID, but usually 5000 is in the URL for the webview
+          // If not, we might be on the main domain?
+          setExpoUrl(`exp://${host}`); // Unlikely to work without port mapping
+        }
+      } else {
+        // Localhost
+        setExpoUrl(`exp://${window.location.hostname}:8081`);
+      }
+    }
+  }, []);
+
   const renderPost = ({ item: post }: { item: typeof posts[0] }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -144,6 +170,31 @@ export default function Home() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Mobile App QR Code Widget */}
+          {Platform.OS === 'web' && expoUrl && (
+            <View style={styles.widgetCard}>
+              <View style={styles.widgetHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Smartphone size={20} color="#059669" />
+                  <Text style={styles.widgetTitle}>Mobile App</Text>
+                </View>
+              </View>
+              <View style={{ padding: 24, alignItems: 'center', gap: 16 }}>
+                <View style={{ padding: 12, backgroundColor: 'white', borderRadius: 12, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8 }}>
+                  <QRCodeSVG value={expoUrl} size={180} />
+                </View>
+                <Text style={{ textAlign: 'center', color: '#64748b', fontSize: 13, lineHeight: 20 }}>
+                  Scan with <Text style={{ fontWeight: '600', color: '#0f172a' }}>Expo Go</Text> on Android or iOS to test on your device.
+                </Text>
+                <View style={{ padding: 8, backgroundColor: '#f0fdf4', borderRadius: 8, width: '100%' }}>
+                  <Text style={{ fontSize: 11, color: '#166534', textAlign: 'center', fontFamily: 'monospace' }} numberOfLines={1} ellipsizeMode="middle">
+                    {expoUrl}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Suggested Groups */}
           <View style={styles.widgetCard}>
