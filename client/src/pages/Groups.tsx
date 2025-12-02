@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native-web';
 import { groups } from "@/lib/mockData";
-import { Search, MapPin, Building2, Plus, GraduationCap, X } from "lucide-react-native";
+import { Search, MapPin, Building2, Plus, GraduationCap, X } from "@/components/ui/Icons";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 

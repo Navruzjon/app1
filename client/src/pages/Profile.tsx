@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal, Switch } from 'react-native-web';
 import { currentUser } from "@/lib/mockData";
-import { MapPin, Calendar, Award, Book, Heart, Star, Shield, UserCog, X } from "lucide-react-native";
+import { MapPin, Calendar, Award, Book, Heart, Star, Shield, UserCog, X } from "@/components/ui/Icons";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 

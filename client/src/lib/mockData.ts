@@ -1,4 +1,4 @@
-import { Users, Calendar, BookOpen, MapPin, Heart, Star, MessageCircle } from "lucide-react-native";
+import { Users, Calendar, BookOpen, MapPin, Heart, Star, MessageCircle } from "@/components/ui/Icons";
 
 export const currentUser = {
   id: "1",

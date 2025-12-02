@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Image, StyleSheet, Platform } from 'react-native-web';
 import { useLocation } from "wouter";
-import { Home, User, Users, BookOpen, Moon, Settings, Menu, Heart, Bell, Check, Briefcase, Calendar } from "lucide-react-native";
+import { Home, User, Users, BookOpen, Moon, Settings, Menu, Heart, Bell, Check, Briefcase, Calendar } from "@/components/ui/Icons";
 import { useState } from "react";
 import { currentUser, notifications } from "@/lib/mockData";
 

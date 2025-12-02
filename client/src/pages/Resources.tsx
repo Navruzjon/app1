@@ -1,6 +1,6 @@
 import Layout from "@/components/layout/Layout";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native-web';
-import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket, PlayCircle, FileText, Download, Check } from "lucide-react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Platform } from 'react-native-web';
+import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket, PlayCircle, FileText, Download, Check } from "@/components/ui/Icons";
 import { useState } from "react";
 import { resources } from "@/lib/mockData";
 
@@ -248,7 +248,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    backdropFilter: 'blur(4px)',
+    // @ts-ignore
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(4px)',
+      },
+    }),
   },
   resourceTitle: {
     fontSize: 18,

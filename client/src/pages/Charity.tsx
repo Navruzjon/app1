@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Switch, Modal } from 'react-native-web';
 import { charityCauses } from "@/lib/mockData";
-import { Heart, TrendingUp, Users, ShieldCheck, CreditCard, ExternalLink, Info, FileText, AlertCircle, CheckCircle2, Star, X } from "lucide-react-native";
+import { Heart, TrendingUp, Users, ShieldCheck, CreditCard, ExternalLink, Info, FileText, AlertCircle, CheckCircle2, Star, X } from "@/components/ui/Icons";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 

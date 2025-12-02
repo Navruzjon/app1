@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native-web';
-import { AlertCircle } from "lucide-react-native";
+import { AlertCircle } from "@/components/ui/Icons";
 
 // Reusable Components
 const Card = ({ children, style }: { children: React.ReactNode, style?: any }) => (
