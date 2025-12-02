@@ -1,15 +1,24 @@
-import { Link, useLocation } from "wouter";
-import { Home, User, Users, BookOpen, Moon, Settings, Menu, X, Heart, Bell, Check, Briefcase, Calendar, Star } from "lucide-react";
+import { View, Text, TouchableOpacity, ScrollView, Image, StyleSheet, Platform } from 'react-native-web';
+import { useLocation } from "wouter";
+import { Home, User, Users, BookOpen, Moon, Settings, Menu, Heart, Bell, Check, Briefcase, Calendar } from "lucide-react";
 import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { currentUser, notifications } from "@/lib/mockData";
 
+// Mocking complex components for the RN rewrite to focus on structure
+const MobileSheet = ({ isOpen, onClose, children }: { isOpen: boolean, onClose: () => void, children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  return (
+    <View style={styles.mobileSheetOverlay}>
+      <TouchableOpacity style={styles.mobileSheetBackdrop} onPress={onClose} />
+      <View style={styles.mobileSheetContent}>
+        {children}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const navItems = [
@@ -23,7 +32,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { icon: User, label: "Profile", href: "/profile" },
   ];
 
-  // Bottom Nav Items (Subset for Mobile)
   const mobileNavItems = [
     { icon: Home, label: "Home", href: "/" },
     { icon: Moon, label: "Prayer", href: "/prayer" },
@@ -32,147 +40,386 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { icon: User, label: "Profile", href: "/profile" },
   ];
 
-  const NotificationsPopover = () => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          {notifications.some(n => !n.read) && (
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-background" />
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-4 border-b border-border">
-          <h4 className="font-semibold leading-none">Notifications</h4>
-          <p className="text-xs text-muted-foreground mt-1">You have {notifications.filter(n => !n.read).length} unread messages.</p>
-        </div>
-        <ScrollArea className="h-80">
-          <div className="divide-y divide-border">
-            {notifications.map((notification) => (
-              <div key={notification.id} className={`p-4 flex gap-3 hover:bg-muted/50 transition-colors ${!notification.read ? 'bg-primary/5' : ''}`}>
-                <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${!notification.read ? 'bg-primary' : 'bg-transparent'}`} />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">{notification.title}</p>
-                  <p className="text-xs text-muted-foreground">{notification.message}</p>
-                  <p className="text-xs text-muted-foreground pt-1">{notification.time}</p>
-                </div>
-                {notification.read && <Check className="w-3 h-3 text-muted-foreground" />}
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-        <div className="p-2 border-t border-border">
-           <Button variant="ghost" size="sm" className="w-full text-xs">Mark all as read</Button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-
   const NavContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-heading font-bold text-xl shadow-lg shadow-primary/20">
-          UL
-        </div>
-        <span className="font-heading font-bold text-2xl text-foreground tracking-tight">UmmahLink</span>
-      </div>
+    <View style={styles.navContent}>
+      <View style={styles.logoContainer}>
+        <View style={styles.logoBox}>
+          <Text style={styles.logoText}>UL</Text>
+        </View>
+        <Text style={styles.logoTitle}>UmmahLink</Text>
+      </View>
 
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <ScrollView style={styles.navScroll}>
         {navItems.map((item) => {
           const isActive = location === item.href;
           return (
-            <Link key={item.href} href={item.href}>
-              <a
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
-                  ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 font-medium"
-                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  }
-                `}
-              >
-                <item.icon className={`w-5 h-5 ${isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"}`} />
-                <span>{item.label}</span>
-              </a>
-            </Link>
+            <TouchableOpacity
+              key={item.href}
+              onPress={() => {
+                setLocation(item.href);
+                setIsMobileOpen(false);
+              }}
+              style={[
+                styles.navItem,
+                isActive && styles.navItemActive
+              ]}
+            >
+              <item.icon 
+                size={20} 
+                color={isActive ? "#ffffff" : "#64748b"} 
+              />
+              <Text style={[
+                styles.navLabel,
+                isActive && styles.navLabelActive
+              ]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
           );
         })}
-      </nav>
+      </ScrollView>
 
-      <div className="p-4 border-t border-sidebar-border mt-auto">
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors">
-          <Avatar className="h-10 w-10 border-2 border-background">
-            <AvatarImage src={currentUser.avatar} />
-            <AvatarFallback>AH</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-foreground">{currentUser.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentUser.handle}</p>
-          </div>
-          <Settings className="w-4 h-4 text-muted-foreground" />
-        </div>
-      </div>
-    </div>
+      <View style={styles.userFooter}>
+        <TouchableOpacity style={styles.userCard}>
+          <Image 
+            source={{ uri: currentUser.avatar }} 
+            style={styles.userAvatar}
+          />
+          <View style={styles.userInfo}>
+            <Text numberOfLines={1} style={styles.userName}>{currentUser.name}</Text>
+            <Text numberOfLines={1} style={styles.userHandle}>{currentUser.handle}</Text>
+          </View>
+          <Settings size={16} color="#64748b" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   return (
-    <div className="min-h-screen bg-background flex pb-16 md:pb-0">
+    <View style={styles.container}>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 lg:w-72 border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-30">
-        <NavContent />
-      </aside>
+      {/* We use a media query style check or just hide it on small screens using width: 0 or hidden */}
+      <View style={[styles.sidebar, { display: 'flex' }]}>
+         <NavContent />
+      </View>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-40 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-heading font-bold text-lg">
-            UL
-          </div>
-          <span className="font-heading font-bold text-xl">UmmahLink</span>
-        </div>
+      <View style={styles.mobileHeader}>
+        <View style={styles.headerLeft}>
+          <View style={styles.logoBoxSmall}>
+            <Text style={styles.logoTextSmall}>UL</Text>
+          </View>
+          <Text style={styles.headerTitle}>UmmahLink</Text>
+        </View>
         
-        <div className="flex items-center gap-2">
-          <NotificationsPopover />
-          <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="w-6 h-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 bg-sidebar border-r border-sidebar-border">
-              <NavContent />
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Bell size={20} color="#64748b" />
+            {notifications.some(n => !n.read) && (
+              <View style={styles.notificationBadge} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => setIsMobileOpen(true)}
+          >
+            <Menu size={24} color="#0f172a" />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border z-50 flex items-center justify-around px-2 pb-safe">
+      {/* Mobile Sheet (Drawer) */}
+      <MobileSheet isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)}>
+        <NavContent />
+      </MobileSheet>
+
+      {/* Main Content */}
+      <View style={styles.mainContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {children}
+        </ScrollView>
+      </View>
+
+      {/* Mobile Bottom Nav */}
+      <View style={styles.bottomNav}>
         {mobileNavItems.map((item) => {
           const isActive = location === item.href;
           return (
-            <Link key={item.href} href={item.href}>
-              <a className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive ? "text-primary" : "text-muted-foreground"}`}>
-                <item.icon className={`w-5 h-5 ${isActive ? "fill-current/20" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </a>
-            </Link>
+            <TouchableOpacity
+              key={item.href}
+              onPress={() => setLocation(item.href)}
+              style={styles.bottomNavItem}
+            >
+              <item.icon 
+                size={20} 
+                color={isActive ? "#059669" : "#94a3b8"}
+                strokeWidth={isActive ? 2.5 : 2}
+              />
+              <Text style={[
+                styles.bottomNavLabel,
+                isActive && styles.bottomNavLabelActive
+              ]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
           );
         })}
-      </div>
-
-      {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 lg:ml-72 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out relative">
-        {/* Desktop Notification Bell (Floating Top Right) */}
-        <div className="hidden md:block absolute top-6 right-8 z-20">
-           <NotificationsPopover />
-        </div>
-        
-        <div className="max-w-5xl mx-auto p-4 md:p-8 animate-in fade-in duration-500">
-          {children}
-        </div>
-      </main>
-    </div>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#f8fafc', // bg-background
+    height: '100vh', // Full viewport height for web
+  },
+  sidebar: {
+    width: 280,
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
+    backgroundColor: '#ffffff',
+    // Hide on mobile (this is a simplified way, normally use Dimensions or media queries)
+    // For this mockup, we'll rely on the fact that mobile usually has narrow width
+    // But RN doesn't do media queries in StyleSheet easily.
+    // We'll assume desktop layout primarily and hide sidebar if screen is small?
+    // Actually, standard RN approach is using Dimensions.
+    // For now, let's leave it visible but covered by mobile header on small screens via zIndex?
+    // Or just keep it simple.
+    display: 'none', // Default to hidden, show on large screens if we could. 
+    // Since we can't easily do media queries here without hooks, let's make it responsive via logic if needed.
+    // BUT, react-native-web maps StyleSheet to CSS, so we CAN use media queries!
+    // @ts-ignore
+    '@media (min-width: 768px)': {
+      display: 'flex',
+    },
+  },
+  mobileHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 64,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    zIndex: 40,
+    // @ts-ignore
+    '@media (min-width: 768px)': {
+      display: 'none',
+    },
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  logoBoxSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#059669',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoTextSmall: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  iconButton: {
+    padding: 8,
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ef4444',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  mainContent: {
+    flex: 1,
+    // @ts-ignore
+    '@media (min-width: 768px)': {
+      paddingTop: 0,
+    },
+    paddingTop: 64, // Mobile header height
+    paddingBottom: 64, // Bottom nav height
+  },
+  scrollContent: {
+    padding: 16,
+    // @ts-ignore
+    '@media (min-width: 768px)': {
+      padding: 32,
+      maxWidth: 1024,
+      alignSelf: 'center',
+      width: '100%',
+    },
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 64,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    zIndex: 50,
+    // @ts-ignore
+    '@media (min-width: 768px)': {
+      display: 'none',
+    },
+  },
+  bottomNavItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  bottomNavLabel: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  bottomNavLabelActive: {
+    color: '#059669',
+  },
+  navContent: {
+    flex: 1,
+    paddingVertical: 24,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 24,
+    gap: 12,
+  },
+  logoBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#059669',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  logoText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  logoTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  navScroll: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    gap: 12,
+    marginBottom: 4,
+  },
+  navItemActive: {
+    backgroundColor: '#059669',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  navLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748b',
+  },
+  navLabelActive: {
+    color: '#ffffff',
+  },
+  userFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+    gap: 12,
+  },
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  userHandle: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  mobileSheetOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  mobileSheetBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  mobileSheetContent: {
+    width: 280,
+    height: '100%',
+    backgroundColor: '#ffffff',
+  },
+});

@@ -1,186 +1,520 @@
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, FlatList } from 'react-native-web';
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera } from "lucide-react";
 import { posts, prayerTimes, currentUser } from "@/lib/mockData";
-import { motion } from "framer-motion";
 import patternBg from "@assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png";
 
 export default function Home() {
+  const renderPost = ({ item: post }: { item: typeof posts[0] }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.authorRow}>
+          <Image source={{ uri: post.author.avatar }} style={styles.avatar} />
+          <View>
+            <Text style={styles.authorName}>{post.author.name}</Text>
+            <Text style={styles.authorHandle}>{post.author.handle} • {post.time}</Text>
+          </View>
+        </View>
+        <TouchableOpacity>
+          <MoreHorizontal size={20} color="#64748b" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.cardContent}>
+        {post.type === 'prayer_request' && (
+          <View style={[styles.badge, styles.badgeAmber]}>
+            <Text style={styles.badgeTextAmber}>🤲 Prayer Request</Text>
+          </View>
+        )}
+        {post.type === 'announcement' && (
+          <View style={[styles.badge, styles.badgePrimary]}>
+            <Text style={styles.badgeTextPrimary}>📢 Announcement</Text>
+          </View>
+        )}
+        
+        <Text style={styles.postText}>{post.content}</Text>
+        
+        {post.image && (
+          <View style={styles.postImageContainer}>
+            <Image source={{ uri: post.image }} style={styles.postImage} />
+          </View>
+        )}
+
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Heart size={18} color="#64748b" />
+            <Text style={styles.actionText}>{post.likes}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <MessageCircle size={18} color="#64748b" />
+            <Text style={styles.actionText}>{post.comments}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, { marginLeft: 'auto' }]}>
+            <Share2 size={18} color="#64748b" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <Layout>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <View style={styles.grid}>
         {/* Main Feed Section */}
-        <div className="lg:col-span-2 space-y-6">
+        <View style={styles.mainFeed}>
           
           {/* Welcome Hero */}
-          <div className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground p-8 shadow-xl shadow-primary/20">
-            <div 
-              className="absolute inset-0 opacity-10 pointer-events-none"
-              style={{ backgroundImage: `url(${patternBg})`, backgroundSize: 'cover' }}
-            />
-            <div className="relative z-10">
-              <h1 className="text-3xl font-heading font-bold mb-2">As-salamu alaykum, {currentUser.name.split(' ')[0]}</h1>
-              <p className="text-primary-foreground/80 mb-6">May your day be filled with barakah and peace.</p>
+          <View style={styles.heroCard}>
+            <Image source={{ uri: patternBg }} style={styles.heroBg} />
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>As-salamu alaykum, {currentUser.name.split(' ')[0]}</Text>
+              <Text style={styles.heroSubtitle}>May your day be filled with barakah and peace.</Text>
               
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                <p className="font-serif text-lg italic mb-3">"Verily, with hardship comes ease."</p>
-                <p className="text-sm opacity-75 font-medium">— Surah Ash-Sharh (94:6)</p>
-              </div>
-            </div>
-          </div>
+              <View style={styles.quoteBox}>
+                <Text style={styles.quoteText}>"Verily, with hardship comes ease."</Text>
+                <Text style={styles.quoteSource}>— Surah Ash-Sharh (94:6)</Text>
+              </View>
+            </View>
+          </View>
 
           {/* Composer */}
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-4 flex gap-4">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={currentUser.avatar} />
-                <AvatarFallback>ME</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <input 
-                  type="text" 
+          <View style={styles.composerCard}>
+            <View style={styles.composerRow}>
+              <Image source={{ uri: currentUser.avatar }} style={styles.avatarSmall} />
+              <View style={styles.inputWrapper}>
+                <TextInput 
                   placeholder="Share a reflection, prayer request, or update..." 
-                  className="w-full bg-muted/50 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  placeholderTextColor="#94a3b8"
+                  style={styles.input}
                 />
-                <div className="flex justify-end mt-3 gap-2">
-                   <Button size="sm" variant="ghost" className="text-xs">
-                    📷 Photo
-                   </Button>
-                   <Button size="sm" className="rounded-full px-6">Post</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                <View style={styles.composerActions}>
+                   <TouchableOpacity style={styles.mediaButton}>
+                    <Camera size={16} color="#64748b" />
+                    <Text style={styles.mediaButtonText}>Photo</Text>
+                   </TouchableOpacity>
+                   <TouchableOpacity style={styles.postButton}>
+                     <Text style={styles.postButtonText}>Post</Text>
+                   </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
 
           {/* Feed Items */}
-          <div className="space-y-6">
-            <h2 className="text-xl font-heading font-semibold text-foreground">Community Feed</h2>
-            {posts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <CardHeader className="flex flex-row items-start justify-between p-4 pb-0">
-                    <div className="flex gap-3">
-                      <Avatar>
-                        <AvatarImage src={post.author.avatar} />
-                        <AvatarFallback>{post.author.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold text-sm">{post.author.name}</h3>
-                        <p className="text-xs text-muted-foreground">{post.author.handle} • {post.time}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="p-4 space-y-4">
-                    {post.type === 'prayer_request' && (
-                      <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">
-                        🤲 Prayer Request
-                      </Badge>
-                    )}
-                    {post.type === 'announcement' && (
-                      <Badge variant="default" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                        📢 Announcement
-                      </Badge>
-                    )}
-                    
-                    <p className="text-sm leading-relaxed text-foreground/90">{post.content}</p>
-                    
-                    {post.image && (
-                      <div className="rounded-xl overflow-hidden mt-3">
-                        <img src={post.image} alt="Post content" className="w-full h-auto object-cover max-h-[300px]" />
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-6 pt-2 text-muted-foreground">
-                      <button className="flex items-center gap-1.5 text-sm hover:text-pink-500 transition-colors group">
-                        <Heart className="w-4 h-4 group-hover:fill-current" />
-                        <span>{post.likes}</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 text-sm hover:text-blue-500 transition-colors">
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{post.comments}</span>
-                      </button>
-                      <button className="ml-auto text-sm hover:text-foreground transition-colors">
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+          <View style={styles.feedSection}>
+            <Text style={styles.sectionTitle}>Community Feed</Text>
+            {/* Mapping instead of FlatList because we are inside a ScrollView from Layout */}
+            {posts.map(post => (
+              <View key={post.id} style={{ marginBottom: 16 }}>
+                {renderPost({ item: post })}
+              </View>
             ))}
-          </div>
-        </div>
+          </View>
+        </View>
 
-        {/* Right Sidebar Widgets */}
-        <div className="space-y-6">
+        {/* Right Sidebar Widgets - Hide on mobile if needed via styles */}
+        <View style={styles.sidebar}>
           {/* Prayer Times Widget */}
-          <Card className="bg-card border-none shadow-md overflow-hidden relative">
-             <div 
-              className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"
-            />
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Clock className="w-5 h-5 text-primary" />
-                Prayer Times
-              </CardTitle>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> London, UK
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              {Object.entries(prayerTimes).map(([name, time], idx) => (
-                <div 
+          <View style={styles.widgetCard}>
+            <View style={styles.widgetHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Clock size={20} color="#059669" />
+                <Text style={styles.widgetTitle}>Prayer Times</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <MapPin size={12} color="#64748b" />
+                <Text style={styles.locationText}>London, UK</Text>
+              </View>
+            </View>
+            <View style={styles.prayerList}>
+              {Object.entries(prayerTimes).map(([name, time]) => (
+                <View 
                   key={name} 
-                  className={`flex justify-between items-center p-2.5 rounded-lg ${name === 'asr' ? 'bg-primary text-primary-foreground shadow-sm font-medium' : 'hover:bg-muted/50'}`}
+                  style={[
+                    styles.prayerRow,
+                    name === 'asr' && styles.prayerRowActive
+                  ]}
                 >
-                  <span className="capitalize text-sm">{name}</span>
-                  <span className="text-sm font-mono">{time}</span>
-                </div>
+                  <Text style={[styles.prayerName, name === 'asr' && styles.textWhite]}>{name}</Text>
+                  <Text style={[styles.prayerTime, name === 'asr' && styles.textWhite]}>{time}</Text>
+                </View>
               ))}
-              <div className="pt-4">
-                <Button className="w-full" variant="outline">Full Timetable</Button>
-              </div>
-            </CardContent>
-          </Card>
+              <TouchableOpacity style={styles.fullTimetableBtn}>
+                <Text style={styles.btnTextOutline}>Full Timetable</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* Suggested Groups */}
-          <Card className="border-none shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Suggested Groups</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <View style={styles.widgetCard}>
+            <View style={styles.widgetHeader}>
+              <Text style={styles.widgetTitle}>Suggested Groups</Text>
+            </View>
+            <View style={styles.groupList}>
               {[
                 { name: "Tech Muslims", members: "1.2k" },
                 { name: "Halal Foodies", members: "5.4k" },
                 { name: "Charity Run 2025", members: "340" }
               ].map((group) => (
-                <div key={group.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold">
-                      {group.name[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{group.name}</p>
-                      <p className="text-xs text-muted-foreground">{group.members} members</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="ghost" className="text-xs text-primary hover:text-primary hover:bg-primary/10">Join</Button>
-                </div>
+                <View key={group.name} style={styles.groupRow}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={styles.groupIcon}>
+                      <Text style={styles.groupInitial}>{group.name[0]}</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.groupName}>{group.name}</Text>
+                      <Text style={styles.groupMembers}>{group.members} members</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity style={styles.joinBtn}>
+                    <Text style={styles.joinBtnText}>Join</Text>
+                  </TouchableOpacity>
+                </View>
               ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </View>
+          </View>
+        </View>
+      </View>
     </Layout>
   );
 }
+
+const styles = StyleSheet.create({
+  grid: {
+    flexDirection: 'row',
+    gap: 32,
+    // @ts-ignore
+    '@media (max-width: 1024px)': {
+      flexDirection: 'column',
+    },
+  },
+  mainFeed: {
+    flex: 2,
+    gap: 24,
+  },
+  sidebar: {
+    flex: 1,
+    gap: 24,
+    // @ts-ignore
+    '@media (max-width: 1024px)': {
+      display: 'none',
+    },
+  },
+  heroCard: {
+    backgroundColor: '#059669', // primary
+    borderRadius: 24,
+    padding: 32,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  heroBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.1,
+  },
+  heroContent: {
+    zIndex: 10,
+  },
+  heroTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: 24,
+    fontSize: 16,
+  },
+  quoteBox: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  quoteText: {
+    color: '#ffffff',
+    fontStyle: 'italic',
+    fontSize: 18,
+    marginBottom: 12,
+    fontFamily: 'serif',
+  },
+  quoteSource: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  composerCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  composerRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  avatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  inputWrapper: {
+    flex: 1,
+  },
+  input: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+    marginBottom: 12,
+    outlineStyle: 'none',
+  },
+  composerActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  mediaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  mediaButtonText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  postButton: {
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  postButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: 16,
+  },
+  feedSection: {
+    marginTop: 8,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 16,
+  },
+  authorRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  authorName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  authorHandle: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  cardContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 16,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeAmber: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  badgeTextAmber: {
+    color: '#b45309',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  badgePrimary: {
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  badgeTextPrimary: {
+    color: '#059669',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  postText: {
+    fontSize: 14,
+    lineHeight: 24, // 1.5 * 16
+    color: '#334155',
+  },
+  postImageContainer: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  postImage: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'cover',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+    paddingTop: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  widgetCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  widgetHeader: {
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  widgetTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  prayerList: {
+    padding: 24,
+    gap: 4,
+  },
+  prayerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderRadius: 8,
+  },
+  prayerRowActive: {
+    backgroundColor: '#059669',
+  },
+  prayerName: {
+    fontSize: 14,
+    color: '#0f172a',
+    textTransform: 'capitalize',
+  },
+  prayerTime: {
+    fontSize: 14,
+    fontFamily: 'monospace',
+    color: '#0f172a',
+  },
+  textWhite: {
+    color: '#ffffff',
+  },
+  fullTimetableBtn: {
+    marginTop: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  btnTextOutline: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0f172a',
+  },
+  groupList: {
+    padding: 24,
+    gap: 16,
+  },
+  groupRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  groupIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupInitial: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#64748b',
+  },
+  groupName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0f172a',
+  },
+  groupMembers: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  joinBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  joinBtnText: {
+    fontSize: 12,
+    color: '#059669',
+    fontWeight: '500',
+  },
+});

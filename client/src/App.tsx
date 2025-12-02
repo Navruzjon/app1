@@ -1,3 +1,4 @@
+import { View, Text, StyleSheet } from 'react-native-web';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -33,11 +34,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
+        <View style={styles.container}>
+          <Toaster />
+          <Router />
+        </View>
       </TooltipProvider>
     </QueryClientProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    height: '100%',
+  },
+});
 
 export default App;
