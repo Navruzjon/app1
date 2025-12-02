@@ -33,7 +33,7 @@ const professionals = [
     name: "Dr. Sarah Ahmed",
     profession: "Pediatrician",
     rate: "£120/hr",
-    location: { city: "London", town: "Wembley" },
+    location: { city: "London", town: "Wembley", lat: 51.5505, lng: -0.2987 },
     radius: "10 miles",
     mosque: "Wembley Central Masjid",
     rating: 4.9,
@@ -50,7 +50,7 @@ const professionals = [
     name: "Yusuf Khan",
     profession: "Electrician",
     rate: "£60/hr",
-    location: { city: "Birmingham", town: "Sparkhill" },
+    location: { city: "Birmingham", town: "Sparkhill", lat: 52.4862, lng: -1.8904 },
     radius: "15 miles",
     mosque: "Sparkbrook Masjid",
     rating: 4.8,
@@ -67,7 +67,7 @@ const professionals = [
     name: "Aisha Malik",
     profession: "Math Tutor",
     rate: "£35/hr",
-    location: { city: "London", town: "Ilford" },
+    location: { city: "London", town: "Ilford", lat: 51.5588, lng: 0.0855 },
     radius: "5 miles",
     mosque: "Ilford Islamic Centre",
     rating: 5.0,
@@ -84,7 +84,7 @@ const professionals = [
     name: "Ibrahim Patel",
     profession: "Legal Consultant",
     rate: "£150/hr",
-    location: { city: "Manchester", town: "Cheetham Hill" },
+    location: { city: "Manchester", town: "Cheetham Hill", lat: 53.4808, lng: -2.2426 },
     radius: "National (Remote)",
     mosque: "North Manchester Jamia Mosque",
     rating: 4.7,
@@ -98,9 +98,24 @@ const professionals = [
   }
 ];
 
+// Haversine formula to calculate distance in miles
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 3959; // Radius of Earth in miles
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export default function Professionals() {
   const [searchQuery, setSearchQuery] = useState("");
   const [contactRequests, setContactRequests] = useState<number[]>([]);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   const handleRequestContact = (id: number) => {
     setContactRequests([...contactRequests, id]);
@@ -110,12 +125,62 @@ export default function Professionals() {
     });
   };
 
-  const filteredProfessionals = professionals.filter(pro => 
-    pro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pro.profession.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pro.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    pro.recentWork.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleNearMe = () => {
+    setIsLocating(true);
+    if (!navigator.geolocation) {
+      toast({
+        title: "Error",
+        description: "Geolocation is not supported by your browser.",
+        variant: "destructive"
+      });
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setIsLocating(false);
+        toast({
+          title: "Location Found",
+          description: "Showing professionals nearest to you.",
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        toast({
+          title: "Location Error",
+          description: "Unable to retrieve your location. Please enable permissions.",
+          variant: "destructive"
+        });
+        setIsLocating(false);
+      }
+    );
+  };
+
+  const filteredProfessionals = professionals
+    .filter(pro => 
+      pro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pro.profession.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pro.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      pro.recentWork.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .map(pro => {
+      if (userLocation) {
+        const distance = calculateDistance(userLocation.lat, userLocation.lng, pro.location.lat, pro.location.lng);
+        return { ...pro, distance };
+      }
+      return pro;
+    })
+    .sort((a, b) => {
+      if (userLocation && 'distance' in a && 'distance' in b) {
+        return (a.distance as number) - (b.distance as number);
+      }
+      return 0;
+    });
 
   return (
     <Layout>
@@ -142,8 +207,18 @@ export default function Professionals() {
           <Button variant="outline" className="h-auto py-3 px-6 gap-2 bg-card border-none shadow-sm">
             <Filter className="w-4 h-4" /> Filters
           </Button>
-          <Button variant="outline" className="h-auto py-3 px-6 gap-2 bg-card border-none shadow-sm">
-            <MapPin className="w-4 h-4" /> Near Me
+          <Button 
+            variant={userLocation ? "default" : "outline"} 
+            className={`h-auto py-3 px-6 gap-2 shadow-sm ${!userLocation ? "bg-card border-none" : ""}`}
+            onClick={handleNearMe}
+            disabled={isLocating}
+          >
+            {isLocating ? (
+              <span className="animate-spin mr-1">◌</span>
+            ) : (
+              <MapPin className="w-4 h-4" />
+            )}
+            {userLocation ? "Near Me (Active)" : "Near Me"}
           </Button>
         </div>
 
@@ -151,10 +226,9 @@ export default function Professionals() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProfessionals.map((pro) => {
              const isPending = contactRequests.includes(pro.id);
-             const isHidden = pro.contactHidden && !isPending; // For demo, we'll pretend request keeps it hidden until "approved" (mocked by not changing hidden state yet, but showing pending UI)
-             // Actually, let's just use the mock data 'contactHidden' prop to simulate different states.
-             // Yusuf Khan has contactHidden: false (simulating approved/public)
-             
+             // @ts-ignore
+             const distance = pro.distance;
+
              return (
             <Card key={pro.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
               <CardHeader className="pb-3 flex flex-row gap-4 items-start">
@@ -173,6 +247,11 @@ export default function Professionals() {
                   <p className="text-primary font-medium text-sm flex items-center gap-1">
                     <Briefcase className="w-3 h-3" /> {pro.profession}
                   </p>
+                  {distance !== undefined && (
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {distance.toFixed(1)} miles away
+                    </p>
+                  )}
                 </div>
               </CardHeader>
               
