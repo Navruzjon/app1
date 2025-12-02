@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#f8fafc', // bg-background
     // @ts-ignore
-    height: '100vh', // Full viewport height for web
+    height: Platform.OS === 'web' ? '100vh' : '100%', // Full viewport height for web
   },
   sidebar: {
     width: 280,
