@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare, Check, ShieldCheck } from "lucide-react";
+import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare, Check, ShieldCheck, Lock, Unlock, Phone, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -40,7 +40,10 @@ const professionals = [
     reviews: 124,
     avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=200&h=200",
     specialties: ["Child Health", "Vaccinations"],
-    recentWork: "Led a community vaccination drive for 500+ children."
+    recentWork: "Led a community vaccination drive for 500+ children.",
+    contactHidden: true,
+    phone: "+44 7700 900000",
+    email: "dr.ahmed@example.com"
   },
   {
     id: 2,
@@ -54,7 +57,10 @@ const professionals = [
     reviews: 89,
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&h=200",
     specialties: ["Wiring", "Lighting", "Emergency Repairs"],
-    recentWork: "Installed energy-efficient lighting for the local madrassah."
+    recentWork: "Installed energy-efficient lighting for the local madrassah.",
+    contactHidden: false,
+    phone: "+44 7700 900001",
+    email: "yusuf.sparks@example.com"
   },
   {
     id: 3,
@@ -68,7 +74,10 @@ const professionals = [
     reviews: 45,
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&h=200",
     specialties: ["GCSE", "A-Level", "Calculus"],
-    recentWork: "Helped 5 students achieve A* in A-Level Maths this year."
+    recentWork: "Helped 5 students achieve A* in A-Level Maths this year.",
+    contactHidden: true,
+    phone: "+44 7700 900002",
+    email: "aisha.m@example.com"
   },
   {
     id: 4,
@@ -82,12 +91,24 @@ const professionals = [
     reviews: 210,
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&h=200",
     specialties: ["Property Law", "Islamic Wills", "Family Law"],
-    recentWork: "Pro bono legal advice clinic for low-income families."
+    recentWork: "Pro bono legal advice clinic for low-income families.",
+    contactHidden: true,
+    phone: "+44 7700 900003",
+    email: "ibrahim.law@example.com"
   }
 ];
 
 export default function Professionals() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [contactRequests, setContactRequests] = useState<number[]>([]);
+
+  const handleRequestContact = (id: number) => {
+    setContactRequests([...contactRequests, id]);
+    toast({
+      title: "Request Sent",
+      description: "The professional has been notified. You will see their details once they approve.",
+    });
+  };
 
   const filteredProfessionals = professionals.filter(pro => 
     pro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -128,7 +149,13 @@ export default function Professionals() {
 
         {/* Professionals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProfessionals.map((pro) => (
+          {filteredProfessionals.map((pro) => {
+             const isPending = contactRequests.includes(pro.id);
+             const isHidden = pro.contactHidden && !isPending; // For demo, we'll pretend request keeps it hidden until "approved" (mocked by not changing hidden state yet, but showing pending UI)
+             // Actually, let's just use the mock data 'contactHidden' prop to simulate different states.
+             // Yusuf Khan has contactHidden: false (simulating approved/public)
+             
+             return (
             <Card key={pro.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
               <CardHeader className="pb-3 flex flex-row gap-4 items-start">
                 <Avatar className="w-14 h-14 border-2 border-background shadow-sm">
@@ -189,14 +216,43 @@ export default function Professionals() {
                       <span className="font-medium text-foreground text-right max-w-[150px] truncate" title={pro.mosque}>{pro.mosque}</span>
                    </div>
                 </div>
+
+                {/* Contact Details Section */}
+                {!pro.contactHidden ? (
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-100 space-y-1 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center gap-2 text-sm text-green-800">
+                      <Phone className="w-3 h-3" /> {pro.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-green-800">
+                      <Mail className="w-3 h-3" /> {pro.email}
+                    </div>
+                    <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
+                      <Unlock className="w-3 h-3" /> Contact details revealed
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-muted/50 p-3 rounded-lg border border-border/50 flex items-center justify-center gap-2 text-muted-foreground text-xs">
+                    <Lock className="w-3 h-3" /> Contact details hidden
+                  </div>
+                )}
+
               </CardContent>
               
               <CardFooter className="pt-2 gap-2">
-                <Button className="flex-1">Contact</Button>
+                {pro.contactHidden ? (
+                   isPending ? (
+                     <Button className="flex-1" disabled variant="secondary">Request Sent</Button>
+                   ) : (
+                     <Button className="flex-1" onClick={() => handleRequestContact(pro.id)}>Request Contact</Button>
+                   )
+                ) : (
+                   <Button className="flex-1 bg-green-600 hover:bg-green-700">Call Now</Button>
+                )}
                 <RateProfessionalDialog professional={pro} />
               </CardFooter>
             </Card>
-          ))}
+          );
+          })}
         </div>
       </div>
     </Layout>

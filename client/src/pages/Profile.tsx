@@ -4,9 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Award, Book, Heart, Star } from "lucide-react";
+import { MapPin, Calendar, Award, Book, Heart, Star, Shield, UserCog } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export default function Profile() {
+  const [privacySettings, setPrivacySettings] = useState({
+    useNickname: false,
+    nickname: "Ahmed_99",
+    showFullName: true
+  });
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -28,8 +47,17 @@ export default function Profile() {
               </div>
               
               <div className="flex-1 mb-2 text-center md:text-left">
-                <h1 className="text-3xl font-heading font-bold">{currentUser.name}</h1>
-                <p className="text-muted-foreground font-medium">{currentUser.handle}</p>
+                <h1 className="text-3xl font-heading font-bold">
+                  {privacySettings.useNickname ? privacySettings.nickname : currentUser.name}
+                </h1>
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <p className="text-muted-foreground font-medium">{currentUser.handle}</p>
+                  {privacySettings.useNickname && (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      <Shield className="w-3 h-3" /> Private Mode
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center justify-center md:justify-start gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {currentUser.location}</span>
                   <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Joined Dec 2023</span>
@@ -37,7 +65,7 @@ export default function Profile() {
               </div>
               
               <div className="flex gap-3 mb-2 w-full md:w-auto">
-                <Button className="flex-1 md:flex-none">Edit Profile</Button>
+                <EditProfileDialog settings={privacySettings} onSave={setPrivacySettings} />
                 <Button variant="outline" className="flex-1 md:flex-none">Share</Button>
               </div>
             </div>
@@ -200,10 +228,76 @@ export default function Profile() {
                <TabsContent value="groups">
                 <div className="text-center py-10 text-muted-foreground">Groups content here.</div>
               </TabsContent>
-            </Tabs>
+             </Tabs>
           </div>
         </div>
       </div>
     </Layout>
+  );
+}
+
+function EditProfileDialog({ settings, onSave }: { settings: any, onSave: any }) {
+  const [open, setOpen] = useState(false);
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  const handleSave = () => {
+    onSave(localSettings);
+    setOpen(false);
+    toast({
+      title: "Profile Updated",
+      description: "Your privacy settings have been saved.",
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="flex-1 md:flex-none gap-2">
+          <UserCog className="w-4 h-4" /> Edit Profile
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Profile & Privacy</DialogTitle>
+          <DialogDescription>
+            Manage your public identity and visibility.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" defaultValue={currentUser.name} />
+          </div>
+          
+          <div className="space-y-4 border-t border-border pt-4">
+            <h4 className="font-medium text-sm">Privacy Settings</h4>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base">Use Nickname</Label>
+                <p className="text-xs text-muted-foreground">Hide your real name from the public directory.</p>
+              </div>
+              <Switch 
+                checked={localSettings.useNickname} 
+                onCheckedChange={(checked) => setLocalSettings({...localSettings, useNickname: checked})}
+              />
+            </div>
+            
+            {localSettings.useNickname && (
+              <div className="animate-in slide-in-from-top-2 fade-in duration-200">
+                <Label htmlFor="nickname">Nickname</Label>
+                <Input 
+                  id="nickname" 
+                  value={localSettings.nickname} 
+                  onChange={(e) => setLocalSettings({...localSettings, nickname: e.target.value})}
+                  className="mt-1.5"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <Button onClick={handleSave}>Save Changes</Button>
+      </DialogContent>
+    </Dialog>
   );
 }
