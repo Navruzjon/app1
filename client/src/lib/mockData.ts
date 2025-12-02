@@ -64,21 +64,39 @@ export const groups = [
     name: "Fajr Warriors",
     members: 1240,
     description: "Encouraging each other to wake up for Fajr prayer.",
-    icon: Star
+    icon: Star,
+    location: {
+      country: "UK",
+      city: "London",
+      town: "Whitechapel"
+    },
+    mosque: "East London Mosque"
   },
   {
     id: 2,
     name: "Quran Study Circle",
     members: 850,
     description: "Weekly Tadabbur and recitation correction.",
-    icon: BookOpen
+    icon: BookOpen,
+    location: {
+      country: "UK",
+      city: "Birmingham",
+      town: "Small Heath"
+    },
+    mosque: "Green Lane Masjid"
   },
   {
     id: 3,
     name: "Local Charity Team",
     members: 420,
     description: "Organizing local food drives and support.",
-    icon: Heart
+    icon: Heart,
+    location: {
+      country: "USA",
+      city: "Dearborn",
+      town: "Dearborn"
+    },
+    mosque: "Islamic Center of America"
   }
 ];
 
