@@ -281,7 +281,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
     // @ts-ignore
-    outlineStyle: 'none',
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      },
+    }),
   },
   composerActions: {
     flexDirection: 'row',

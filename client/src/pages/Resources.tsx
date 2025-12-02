@@ -181,7 +181,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 0,
     // @ts-ignore
-    outlineStyle: 'none',
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      },
+    }),
   },
   decorativeCircle: {
     position: 'absolute',
@@ -189,7 +193,11 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 150,
     // @ts-ignore
-    filter: 'blur(60px)', // React Native Web supports filter
+    ...Platform.select({
+      web: {
+        filter: 'blur(60px)',
+      },
+    }),
   },
   sectionTitle: {
     fontSize: 20,
