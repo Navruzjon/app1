@@ -92,6 +92,42 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
+
+             {/* Service Reputation / Client Feedback */}
+             <Card className="border-none shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-500" />
+                    Service Reputation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="bg-muted/30 p-3 rounded-lg">
+                       <div className="flex justify-between items-center mb-1">
+                          <span className="font-medium text-sm">Dr. Sarah Ahmed</span>
+                          <span className="text-xs text-muted-foreground">1 week ago</span>
+                       </div>
+                       <div className="flex gap-2 mb-2">
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] h-5">Paid on Time</Badge>
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] h-5">Polite</Badge>
+                       </div>
+                       <p className="text-xs text-muted-foreground">"Ahmed was very respectful and prompt with payment. A pleasure to serve."</p>
+                    </div>
+
+                    <div className="bg-muted/30 p-3 rounded-lg">
+                       <div className="flex justify-between items-center mb-1">
+                          <span className="font-medium text-sm">Yusuf Khan (Electrician)</span>
+                          <span className="text-xs text-muted-foreground">2 months ago</span>
+                       </div>
+                       <div className="flex gap-2 mb-2">
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] h-5">Clear Communication</Badge>
+                       </div>
+                       <p className="text-xs text-muted-foreground">"Very clear about what needed fixing. Easy to work with."</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
           </div>
 
           {/* Right Column - Feed/Tabs */}

@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog, 
   DialogContent, 
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe } from "lucide-react";
+import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -124,7 +125,7 @@ export default function Professionals() {
                     <CardTitle className="text-lg truncate">{pro.name}</CardTitle>
                     <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none gap-1">
                       <Star className="w-3 h-3 fill-current" />
-                      {pro.rating}
+                      {pro.rating} ({pro.reviews})
                     </Badge>
                   </div>
                   <p className="text-primary font-medium text-sm flex items-center gap-1">
@@ -170,14 +171,79 @@ export default function Professionals() {
                 </div>
               </CardContent>
               
-              <CardFooter className="pt-2">
-                <Button className="w-full">Contact Professional</Button>
+              <CardFooter className="pt-2 gap-2">
+                <Button className="flex-1">Contact</Button>
+                <RateProfessionalDialog professional={pro} />
               </CardFooter>
             </Card>
           ))}
         </div>
       </div>
     </Layout>
+  );
+}
+
+function RateProfessionalDialog({ professional }: { professional: any }) {
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Review Submitted",
+      description: "Thank you for your feedback!",
+    });
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon" title="Rate Service">
+          <Star className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Rate {professional.name}</DialogTitle>
+          <DialogDescription>
+            Share your experience with this professional.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="flex flex-col items-center gap-2 mb-2">
+             <Label>Your Rating</Label>
+             <div className="flex gap-1">
+               {[1, 2, 3, 4, 5].map((star) => (
+                 <button
+                   key={star}
+                   type="button"
+                   className="focus:outline-none transition-transform hover:scale-110"
+                   onMouseEnter={() => setHoverRating(star)}
+                   onMouseLeave={() => setHoverRating(0)}
+                   onClick={() => setRating(star)}
+                 >
+                   <Star 
+                     className={`w-8 h-8 ${
+                       star <= (hoverRating || rating) 
+                         ? "fill-amber-400 text-amber-400" 
+                         : "text-muted-foreground/30"
+                     }`} 
+                   />
+                 </button>
+               ))}
+             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="review">Review</Label>
+            <Textarea id="review" placeholder="Was the service professional? timely? Describe your experience..." rows={4} />
+          </div>
+
+          <Button type="submit" disabled={rating === 0}>Submit Review</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
