@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, FlatList } from 'react-native-web';
 import Layout from "@/components/layout/Layout";
-import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera } from "lucide-react";
+import { Heart, MessageCircle, Share2, MapPin, Clock, MoreHorizontal, Camera } from "lucide-react-native";
 import { posts, prayerTimes, currentUser } from "@/lib/mockData";
 import patternBg from "@assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png";
 

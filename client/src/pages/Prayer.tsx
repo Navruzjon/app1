@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Switch, Modal } from 'react-native-web';
 import { prayerTimes } from "@/lib/mockData";
-import { Compass, Clock, MapPin, Moon, Bell, Mail, MessageSquare, Globe, X } from "lucide-react";
+import { Compass, Clock, MapPin, Moon, Bell, Mail, MessageSquare, Globe, X } from "lucide-react-native";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";

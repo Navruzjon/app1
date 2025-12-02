@@ -1,6 +1,6 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native-web';
-import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket } from "lucide-react";
+import { Search, MapPin, Clock, Calendar as CalendarIcon, Users, Share2, Ticket } from "lucide-react-native";
 import { useState } from "react";
 
 const events = [

@@ -1,4 +1,4 @@
-import { Users, Calendar, BookOpen, MapPin, Heart, Star, MessageCircle } from "lucide-react";
+import { Users, Calendar, BookOpen, MapPin, Heart, Star, MessageCircle } from "lucide-react-native";
 
 export const currentUser = {
   id: "1",

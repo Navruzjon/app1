@@ -1,6 +1,6 @@
 import Layout from "@/components/layout/Layout";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native-web';
-import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, Phone, Mail, Lock, Unlock, X, ShieldCheck, Check } from "lucide-react";
+import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, Phone, Mail, Lock, Unlock, X, ShieldCheck, Check } from "lucide-react-native";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 

@@ -9,7 +9,8 @@ module.exports = function(api) {
           root: ['./'],
           alias: {
             '@': './client/src',
-            '@assets': './attached_assets'
+            '@assets': './attached_assets',
+            'react-native-web': 'react-native'
           },
         },
       ],
