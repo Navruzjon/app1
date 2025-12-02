@@ -23,6 +23,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { icon: User, label: "Profile", href: "/profile" },
   ];
 
+  // Bottom Nav Items (Subset for Mobile)
+  const mobileNavItems = [
+    { icon: Home, label: "Home", href: "/" },
+    { icon: Moon, label: "Prayer", href: "/prayer" },
+    { icon: Users, label: "Community", href: "/groups" },
+    { icon: Briefcase, label: "Services", href: "/professionals" },
+    { icon: User, label: "Profile", href: "/profile" },
+  ];
+
   const NotificationsPopover = () => (
     <Popover>
       <PopoverTrigger asChild>
@@ -46,7 +55,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium leading-none">{notification.title}</p>
                   <p className="text-xs text-muted-foreground">{notification.message}</p>
-                  <p className="text-[10px] text-muted-foreground pt-1">{notification.time}</p>
+                  <p className="text-xs text-muted-foreground pt-1">{notification.time}</p>
                 </div>
                 {notification.read && <Check className="w-3 h-3 text-muted-foreground" />}
               </div>
@@ -108,7 +117,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex pb-16 md:pb-0">
       {/* Desktop Sidebar */}
       <aside className="hidden md:block w-64 lg:w-72 border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-30">
         <NavContent />
@@ -136,6 +145,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
         </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border z-50 flex items-center justify-around px-2 pb-safe">
+        {mobileNavItems.map((item) => {
+          const isActive = location === item.href;
+          return (
+            <Link key={item.href} href={item.href}>
+              <a className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                <item.icon className={`w-5 h-5 ${isActive ? "fill-current/20" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </a>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Main Content Area */}
