@@ -5,22 +5,21 @@ import { posts, prayerTimes, currentUser } from "@/lib/mockData";
 import patternBg from "@assets/generated_images/subtle_islamic_geometric_pattern_background_in_soft_emerald_and_white.png";
 import { useState, useEffect } from 'react';
 
-// Dynamic import for QR Code to avoid Native crashes
-let QRCodeSVG: any = null;
-if (Platform.OS === 'web') {
-  try {
-    QRCodeSVG = require('qrcode.react').QRCodeSVG;
-  } catch (e) {
-    console.warn('QRCodeSVG not available');
-  }
-}
-
 export default function Home() {
   const [expoUrl, setExpoUrl] = useState('');
+  const [QRCodeComponent, setQRCodeComponent] = useState<any>(null);
 
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const host = window.location.hostname;
+      console.log('Home: determining expo URL for host:', host);
+      
+      // Load QR Code library dynamically
+      import('qrcode.react').then((mod) => {
+        console.log('Home: loaded qrcode.react', Object.keys(mod));
+        setQRCodeComponent(() => mod.QRCodeSVG);
+      }).catch(err => console.warn('Failed to load QRCodeSVG', err));
+
       // Construct Expo URL based on current host
       // Replit: <repl>-5000.<region>.replit.dev -> <repl>-8081.<region>.replit.dev
       if (host.includes('replit.dev')) {
@@ -181,7 +180,7 @@ export default function Home() {
           </View>
 
           {/* Mobile App QR Code Widget */}
-          {Platform.OS === 'web' && expoUrl && QRCodeSVG && (
+          {Platform.OS === 'web' && expoUrl && QRCodeComponent && (
             <View style={styles.widgetCard}>
               <View style={styles.widgetHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -191,7 +190,7 @@ export default function Home() {
               </View>
               <View style={{ padding: 24, alignItems: 'center', gap: 16 }}>
                 <View style={{ padding: 12, backgroundColor: 'white', borderRadius: 12, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8 }}>
-                  <QRCodeSVG value={expoUrl} size={180} />
+                  <QRCodeComponent value={expoUrl} size={180} />
                 </View>
                 <Text style={{ textAlign: 'center', color: '#64748b', fontSize: 13, lineHeight: 20 }}>
                   Scan with <Text style={{ fontWeight: '600', color: '#0f172a' }}>Expo Go</Text> on Android or iOS to test on your device.
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 24,
     // @ts-ignore
-    '@media (max-width: 1024px)': {
+    '@media (max-width: 768px)': {
       display: 'none',
     },
   },
