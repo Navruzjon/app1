@@ -39,7 +39,8 @@ const professionals = [
     rating: 4.9,
     reviews: 124,
     avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=200&h=200",
-    specialties: ["Child Health", "Vaccinations"]
+    specialties: ["Child Health", "Vaccinations"],
+    recentWork: "Led a community vaccination drive for 500+ children."
   },
   {
     id: 2,
@@ -52,7 +53,8 @@ const professionals = [
     rating: 4.8,
     reviews: 89,
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&h=200",
-    specialties: ["Wiring", "Lighting", "Emergency Repairs"]
+    specialties: ["Wiring", "Lighting", "Emergency Repairs"],
+    recentWork: "Installed energy-efficient lighting for the local madrassah."
   },
   {
     id: 3,
@@ -65,7 +67,8 @@ const professionals = [
     rating: 5.0,
     reviews: 45,
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&h=200",
-    specialties: ["GCSE", "A-Level", "Calculus"]
+    specialties: ["GCSE", "A-Level", "Calculus"],
+    recentWork: "Helped 5 students achieve A* in A-Level Maths this year."
   },
   {
     id: 4,
@@ -78,11 +81,21 @@ const professionals = [
     rating: 4.7,
     reviews: 210,
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&h=200",
-    specialties: ["Property Law", "Islamic Wills", "Family Law"]
+    specialties: ["Property Law", "Islamic Wills", "Family Law"],
+    recentWork: "Pro bono legal advice clinic for low-income families."
   }
 ];
 
 export default function Professionals() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredProfessionals = professionals.filter(pro => 
+    pro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    pro.profession.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    pro.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    pro.recentWork.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -99,8 +112,10 @@ export default function Professionals() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input 
-              placeholder="Search for doctors, plumbers, tutors..." 
+              placeholder="Search for doctors, projects, skills..." 
               className="pl-10 py-6 rounded-xl bg-card border-none shadow-sm text-base"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Button variant="outline" className="h-auto py-3 px-6 gap-2 bg-card border-none shadow-sm">
@@ -113,7 +128,7 @@ export default function Professionals() {
 
         {/* Professionals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {professionals.map((pro) => (
+          {filteredProfessionals.map((pro) => (
             <Card key={pro.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
               <CardHeader className="pb-3 flex flex-row gap-4 items-start">
                 <Avatar className="w-14 h-14 border-2 border-background shadow-sm">
@@ -141,6 +156,11 @@ export default function Professionals() {
                       {tag}
                     </span>
                   ))}
+                </div>
+
+                <div className="bg-muted/30 p-3 rounded-lg border border-border/50">
+                  <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">Recent Work</p>
+                  <p className="text-sm italic text-foreground/90 line-clamp-2">"{pro.recentWork}"</p>
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-border/50">
