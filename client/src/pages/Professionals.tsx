@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare } from "lucide-react";
+import { Search, MapPin, Building2, Briefcase, Star, DollarSign, Filter, Globe, MessageSquare, Check, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -269,15 +269,22 @@ function RateProfessionalDialog({ professional }: { professional: any }) {
 
 function RegisterProfessionalDialog() {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
   const [radius, setRadius] = useState([5]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (step < 3) {
+      setStep(step + 1);
+      return;
+    }
+    
     toast({
-      title: "Profile Submitted",
-      description: "Your professional profile is under review.",
+      title: "Welcome to the Professional Network!",
+      description: "Your subscription is active and profile is live.",
     });
     setOpen(false);
+    setStep(1); // Reset for next time
   };
 
   return (
@@ -289,63 +296,176 @@ function RegisterProfessionalDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Professional Registration</DialogTitle>
+          <DialogTitle>
+            {step === 1 && "Professional Registration"}
+            {step === 2 && "Choose Your Plan"}
+            {step === 3 && "Secure Payment"}
+          </DialogTitle>
           <DialogDescription>
-            Share your expertise with the community.
+            {step === 1 && "Share your expertise with the community."}
+            {step === 2 && "Join the trusted network of community professionals."}
+            {step === 3 && "Complete your subscription to go live."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="profession">Profession/Title</Label>
-              <Input id="profession" placeholder="e.g. Plumber, Tutor" required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="rate">Rate / Price</Label>
-              <Input id="rate" placeholder="e.g. £50/hr or Fixed Price" required />
-            </div>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="specialties">Specialties (comma separated)</Label>
-            <Input id="specialties" placeholder="e.g. Emergency repairs, GCSE Math, Commercial Law" />
-          </div>
-
-          <div className="space-y-3 border-t border-border pt-4 mt-2">
-            <h4 className="font-medium text-sm">Location & Service Area</h4>
-            
-            <div className="grid grid-cols-2 gap-4">
-               <div className="grid gap-2">
-                <Label htmlFor="city">Base City</Label>
-                <Input id="city" placeholder="e.g. London" required />
+          {/* Step 1: Details */}
+          {step === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="profession">Profession/Title</Label>
+                  <Input id="profession" placeholder="e.g. Plumber, Tutor" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="rate">Rate / Price</Label>
+                  <Input id="rate" placeholder="e.g. £50/hr or Fixed Price" required />
+                </div>
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="mosque">Affiliated Masjid</Label>
-                <Input id="mosque" placeholder="Closest Masjid to you" />
+                <Label htmlFor="specialties">Specialties (comma separated)</Label>
+                <Input id="specialties" placeholder="e.g. Emergency repairs, GCSE Math, Commercial Law" />
               </div>
-            </div>
 
-            <div className="grid gap-4 pt-2">
-              <div className="flex justify-between">
-                <Label>Service Radius</Label>
-                <span className="text-sm text-muted-foreground">{radius} miles</span>
+              <div className="space-y-3 border-t border-border pt-4 mt-2">
+                <h4 className="font-medium text-sm">Location & Service Area</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="grid gap-2">
+                    <Label htmlFor="city">Base City</Label>
+                    <Input id="city" placeholder="e.g. London" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="mosque">Affiliated Masjid</Label>
+                    <Input id="mosque" placeholder="Closest Masjid to you" />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 pt-2">
+                  <div className="flex justify-between">
+                    <Label>Service Radius</Label>
+                    <span className="text-sm text-muted-foreground">{radius} miles</span>
+                  </div>
+                  <Slider 
+                    defaultValue={[5]} 
+                    max={50} 
+                    step={1} 
+                    value={radius}
+                    onValueChange={setRadius}
+                    className="py-4"
+                  />
+                  <p className="text-xs text-muted-foreground">How far are you willing to travel to serve the community?</p>
+                </div>
               </div>
-              <Slider 
-                defaultValue={[5]} 
-                max={50} 
-                step={1} 
-                value={radius}
-                onValueChange={setRadius}
-                className="py-4"
-              />
-              <p className="text-xs text-muted-foreground">How far are you willing to travel to serve the community?</p>
             </div>
-          </div>
+          )}
+
+          {/* Step 2: Plan Selection */}
+          {step === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-2 border-primary bg-primary/5 rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-xl">
+                  POPULAR
+                </div>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-bold text-xl">Professional Tier</h3>
+                    <p className="text-muted-foreground text-sm">For serious experts growing their business.</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold">$5.00</span>
+                    <span className="text-muted-foreground text-sm">/month</span>
+                  </div>
+                </div>
+                
+                <ul className="space-y-3 text-sm">
+                  {[
+                    "Verified Professional Badge",
+                    "Unlimited Client Leads",
+                    "Featured in Community Search",
+                    "Access to Client Reviews",
+                    "Affiliated Mosque Verification"
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                        <Check className="w-3 h-3" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="border rounded-xl p-4 opacity-60 grayscale">
+                <div className="flex justify-between items-center">
+                   <h3 className="font-semibold">Free Basic</h3>
+                   <span className="text-sm font-medium">$0/mo</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Basic listing only. No featured placement or lead details.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Payment */}
+          {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="bg-muted/30 p-4 rounded-lg border border-border mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-sm">Professional Tier Subscription</span>
+                  <span className="font-bold">$5.00</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                  <span>Billing Cycle</span>
+                  <span>Monthly</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="card-name">Name on Card</Label>
+                  <Input id="card-name" placeholder="Ahmed Hassan" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="card-number">Card Number</Label>
+                  <div className="relative">
+                    <Input id="card-number" placeholder="0000 0000 0000 0000" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                       <div className="w-8 h-5 bg-muted rounded flex items-center justify-center text-[8px] font-bold text-muted-foreground border border-border">VISA</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="expiry">Expiry</Label>
+                    <Input id="expiry" placeholder="MM/YY" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="cvc">CVC</Label>
+                    <Input id="cvc" placeholder="123" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                <ShieldCheck className="w-4 h-4 text-green-600" />
+                <span>Payments are securely processed. You can cancel anytime.</span>
+              </div>
+            </div>
+          )}
           
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">Create Profile</Button>
+          <div className="flex justify-between pt-4 border-t border-border mt-2">
+            {step > 1 ? (
+              <Button type="button" variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
+            ) : (
+               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            )}
+            
+            <Button type="submit" className="min-w-[120px]">
+              {step === 1 && "Next: Select Plan"}
+              {step === 2 && "Next: Payment"}
+              {step === 3 && "Pay & Join"}
+            </Button>
           </div>
         </form>
       </DialogContent>
