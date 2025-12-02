@@ -10,6 +10,7 @@ import Groups from "@/pages/Groups";
 import Resources from "@/pages/Resources";
 import Prayer from "@/pages/Prayer";
 import Charity from "@/pages/Charity";
+import Professionals from "@/pages/Professionals";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/profile" component={Profile} />
       <Route path="/groups" component={Groups} />
+      <Route path="/professionals" component={Professionals} />
       <Route path="/resources" component={Resources} />
       <Route path="/prayer" component={Prayer} />
       <Route path="/charity" component={Charity} />

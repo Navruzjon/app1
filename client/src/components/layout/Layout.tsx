@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, User, Users, BookOpen, Moon, Settings, Menu, X, Heart, Bell, Check } from "lucide-react";
+import { Home, User, Users, BookOpen, Moon, Settings, Menu, X, Heart, Bell, Check, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { icon: Home, label: "Home", href: "/" },
     { icon: Users, label: "Groups", href: "/groups" },
     { icon: BookOpen, label: "Resources", href: "/resources" },
+    { icon: Briefcase, label: "Professionals", href: "/professionals" },
     { icon: Moon, label: "Prayer & Qibla", href: "/prayer" },
     { icon: Heart, label: "Charity", href: "/charity" },
     { icon: User, label: "Profile", href: "/profile" },
