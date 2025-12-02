@@ -103,9 +103,9 @@ export const groups = [
   },
   {
     id: 4,
-    name: "Ask the Imam - ELM",
+    name: "Mufti Adam (ELM)",
     members: 3200,
-    description: "Direct Q&A with the Imams of East London Mosque. Fiqh, advice, and community matters.",
+    description: "Direct Q&A on Islamic Finance and Inheritance matters.",
     icon: MessageCircle,
     location: {
       country: "UK",
@@ -113,13 +113,14 @@ export const groups = [
       town: "Whitechapel"
     },
     mosque: "East London Mosque",
-    type: "imam_qa"
+    type: "ulama_qa",
+    specialty: "Islamic Finance"
   },
   {
     id: 5,
-    name: "GLM Imam Q&A",
+    name: "Sh. Yusuf (GLM)",
     members: 1500,
-    description: "Official group for religious questions answered by Green Lane Masjid scholars.",
+    description: "Guidance on Family Law, Marriage, and Arbitration.",
     icon: MessageCircle,
     location: {
       country: "UK",
@@ -127,7 +128,23 @@ export const groups = [
       town: "Small Heath"
     },
     mosque: "Green Lane Masjid",
-    type: "imam_qa"
+    type: "ulama_qa",
+    specialty: "Family Law"
+  },
+  {
+    id: 6,
+    name: "Ustadha Fatima",
+    members: 890,
+    description: "Sisters-only Q&A regarding purification and women's fiqh.",
+    icon: Heart,
+    location: {
+      country: "UK",
+      city: "Manchester",
+      town: "Cheetham Hill"
+    },
+    mosque: "North Manchester Jamia",
+    type: "ulama_qa",
+    specialty: "Women's Fiqh"
   }
 ];
 

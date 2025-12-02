@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Users, MapPin, Building2, Plus, MessageCircle, ShieldCheck } from "lucide-react";
+import { Search, Users, MapPin, Building2, Plus, MessageCircle, ShieldCheck, GraduationCap } from "lucide-react";
 import { groups } from "@/lib/mockData";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -48,33 +48,37 @@ export default function Groups() {
         {/* Featured Groups */}
         <div className="space-y-10">
           
-          {/* Imam Q&A Section */}
-          <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6">
+          {/* Ulama / Scholar Q&A Section */}
+          <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-               <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
-                 <MessageCircle className="w-5 h-5" />
+               <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">
+                 <GraduationCap className="w-5 h-5" />
                </div>
                <div>
-                 <h2 className="text-xl font-heading font-semibold text-emerald-900">Ask the Imam</h2>
-                 <p className="text-sm text-emerald-700">Verified Q&A groups with scholars from your local masjid.</p>
+                 <h2 className="text-xl font-heading font-semibold text-indigo-900">Ask a Scholar (Ulama)</h2>
+                 <p className="text-sm text-indigo-700">Connect with specialized scholars for specific religious guidance.</p>
                </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groups.filter(g => g.type === 'imam_qa').map((group) => (
-                <Card key={group.id} className="group hover:shadow-md transition-all duration-200 border-emerald-100 shadow-sm flex flex-col bg-white">
+              {groups.filter(g => g.type === 'ulama_qa').map((group) => (
+                <Card key={group.id} className="group hover:shadow-md transition-all duration-200 border-indigo-100 shadow-sm flex flex-col bg-white">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                         <group.icon className="w-6 h-6" />
                       </div>
-                      <div className="px-2.5 py-1 rounded-full bg-emerald-50 text-xs font-medium text-emerald-700 flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" /> Official
-                      </div>
+                      {/* @ts-ignore */}
+                      {group.specialty && (
+                        <div className="px-2.5 py-1 rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 flex items-center gap-1">
+                          {/* @ts-ignore */}
+                          {group.specialty}
+                        </div>
+                      )}
                     </div>
-                    <CardTitle className="mt-4 text-lg text-emerald-950">{group.name}</CardTitle>
+                    <CardTitle className="mt-4 text-lg text-indigo-950">{group.name}</CardTitle>
                     <div className="flex flex-col gap-1 mt-1">
-                      <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+                      <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-medium">
                           <Building2 className="w-3 h-3" />
                           {group.mosque}
                       </div>
@@ -84,8 +88,8 @@ export default function Groups() {
                     <CardDescription className="line-clamp-2">{group.description}</CardDescription>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white transition-all">
-                      Ask a Question
+                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white transition-all">
+                      Ask Question
                     </Button>
                   </CardFooter>
                 </Card>
@@ -97,7 +101,7 @@ export default function Groups() {
           <div>
             <h2 className="text-xl font-heading font-semibold mb-4">Community Groups</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groups.filter(g => g.type !== 'imam_qa').map((group) => (
+              {groups.filter(g => g.type !== 'ulama_qa').map((group) => (
                 <Card key={group.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm flex flex-col">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
