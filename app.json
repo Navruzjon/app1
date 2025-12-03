@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.navruzjon.ummahlink",
       "supportsTablet": true
@@ -30,14 +28,8 @@
     },
     "extra": {
       "eas": {
-        "projectId": "628c690c-63ca-4aee-b2bb-bfda0f12c1cc"
+        "projectId": "your-actual-project-id"
       }
-    },
-    "sdkVersion": "54.0.0",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ]
+    }
   }
 }
