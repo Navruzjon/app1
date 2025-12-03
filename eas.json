@@ -1,16 +1,27 @@
 {
   "cli": {
-    "version": ">= 6.0.0"
+    "version": ">= 6.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "production"
+      }
+    },
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "development"
+      }
     },
     "preview": {
-      "distribution": "internal"
-    },
-    "production": {}
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "preview"
+      }
+    }
   },
   "submit": {
     "production": {}
