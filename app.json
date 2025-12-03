@@ -15,9 +15,11 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.navruzjon.ummahlink",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.navruzjon.ummahlink",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +27,17 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "628c690c-63ca-4aee-b2bb-bfda0f12c1cc"
+      }
+    },
+    "sdkVersion": "54.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
   }
 }
